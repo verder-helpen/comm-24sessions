@@ -1,10 +1,18 @@
-use std::{convert::From, error::Error as StdError, fmt::Display};
+use crate::jwt::JwtError;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
+    #[error("Not found")]
     NotFound,
-    JWE(id_contact_jwt::Error),
-    Postgres(postgres::Error),
+    #[error("JWE Error: {0}")]
+    JWE(#[from] JwtError),
+    #[error("Postgres Error: {0}")]
+    Postgres(#[from] postgres::Error),
+    #[error("Reqwest Error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("JSON Error: {0}")]
+    Json(#[from] serde_json::Error),
 }
 
 impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
@@ -16,32 +24,6 @@ impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
 
 impl From<id_contact_jwt::Error> for Error {
     fn from(e: id_contact_jwt::Error) -> Self {
-        Error::JWE(e)
-    }
-}
-
-impl From<postgres::Error> for Error {
-    fn from(e: postgres::Error) -> Self {
-        Error::Postgres(e)
-    }
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::NotFound => f.write_str("Not found"),
-            Error::JWE(e) => e.fmt(f),
-            Error::Postgres(e) => e.fmt(f),
-        }
-    }
-}
-
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        match self {
-            Error::JWE(e) => Some(e),
-            Error::Postgres(e) => Some(e),
-            _ => None,
-        }
+        Error::JWE(JwtError::JWE(e))
     }
 }

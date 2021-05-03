@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 struct RawConfig {
     internal_url: String,
     external_url: String,
+    core_url: String,
 
     decryption_privkey: EncryptionKeyConfig,
     signature_pubkey: SignKeyConfig,
@@ -20,6 +21,7 @@ struct RawConfig {
 pub struct Config {
     internal_url: String,
     external_url: String,
+    core_url: String,
 
     decrypter: Box<dyn JweDecrypter>,
     validator: Box<dyn JwsVerifier>,
@@ -32,6 +34,7 @@ impl TryFrom<RawConfig> for Config {
         Ok(Config {
             internal_url: config.internal_url,
             external_url: config.external_url,
+            core_url: config.core_url,
 
             decrypter: Box::<dyn JweDecrypter>::try_from(config.decryption_privkey)?,
             validator: Box::<dyn JwsVerifier>::try_from(config.signature_pubkey)?,
@@ -54,5 +57,9 @@ impl Config {
 
     pub fn external_url(&self) -> &str {
         &self.external_url
+    }
+
+    pub fn core_url(&self) -> &str {
+        &self.core_url
     }
 }

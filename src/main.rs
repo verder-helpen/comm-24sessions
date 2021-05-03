@@ -1,31 +1,97 @@
-use rocket::{fairing::AdHoc, launch, post, routes, State};
+use jwt::FromJwt;
+use rocket::{fairing::AdHoc, get, launch, post, routes, State};
 use rocket_contrib::{database, databases::postgres, json::Json};
-use types::{InitSessionRequest, InitSessionResponse};
+use types::GuestToken;
 
-use crate::{config::Config, error::Error};
+use crate::{config::Config, error::Error, session::Session, util::random_string};
+use id_contact_proto::{ClientUrlResponse, SessionOptions, StartRequestAuthOnly};
 
-mod comm;
 mod config;
 mod error;
+mod jwt;
+mod session;
 mod types;
+mod util;
 
 #[database("session")]
 pub struct SessionDBConn(postgres::Client);
 
-#[post("/init_session", data = "<request>")]
-async fn init_session(
-    request: Json<InitSessionRequest>,
+#[get("/session_options/<guest_token>")]
+async fn session_options(
+    guest_token: String,
+    config: State<'_, Config>,
+) -> Result<Json<SessionOptions>, Error> {
+    let guest_token = GuestToken::from_jwt(&guest_token, config.validator(), config.decrypter())?;
+
+    let session_options = reqwest::get(format!(
+        "{}/session_options/{}",
+        config.core_url(),
+        &guest_token.purpose
+    ))
+    .await?
+    .text()
+    .await?;
+
+    let session_options = serde_json::from_str::<SessionOptions>(&session_options)?;
+    Ok(Json(session_options))
+}
+
+#[get("/start/<auth_method>/<guest_token>")]
+async fn start(
+    auth_method: String,
+    guest_token: String,
     config: State<'_, Config>,
     db: SessionDBConn,
-) -> Result<Json<InitSessionResponse>, Error> {
-    dbg!(request, config);
-    todo!()
+) -> Result<Json<ClientUrlResponse>, Error> {
+    let guest_token = GuestToken::from_jwt(&guest_token, config.validator(), config.decrypter())?;
+
+    let attr_id = random_string(64);
+    let purpose = guest_token.purpose.clone();
+    let comm_url = guest_token.redirect_url.clone();
+    let attr_url = format!("{}/auth_result/{}", config.internal_url(), attr_id);
+
+    let session = Session::new(guest_token, attr_id);
+    session.persist(&db).await?;
+
+    let start_request = StartRequestAuthOnly {
+        purpose,
+        auth_method,
+        comm_url,
+        attr_url: Some(attr_url),
+    };
+
+    let client = reqwest::Client::new();
+    let client_url_response = client
+        .post(format!("{}/start", config.core_url()))
+        .json(&start_request)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let client_url_response = serde_json::from_str::<ClientUrlResponse>(&client_url_response)?;
+    Ok(Json(client_url_response))
+}
+
+#[post("/auth_result/<attr_id>", data = "<auth_result>")]
+async fn auth_result(
+    attr_id: String,
+    auth_result: String,
+    config: State<'_, Config>,
+    db: SessionDBConn,
+) -> Result<(), Error> {
+    id_contact_jwt::decrypt_and_verify_auth_result(
+        &auth_result,
+        config.validator(),
+        config.decrypter(),
+    )?;
+    Session::register_auth_result(attr_id, auth_result, &db).await
 }
 
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![init_session,])
+        .mount("/", routes![session_options, start, auth_result])
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }

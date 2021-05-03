@@ -1,7 +1,7 @@
 [global]
-
 internal_url = "http://comm-24sessions:8000"
 external_url = "https://comm-24sessions.idcontact.test.tweede.golf"
+core_url = "http://core:8000"
 
 [global.decryption_privkey]
 type = "RSA"
@@ -52,4 +52,4 @@ TQIDAQAB
 """
 
 [global.databases]
-session = { url = "postgres://tg@comm-amazon-psql:5432/tg" }
+session = { url = "postgres://tg@comm-24sessions-psql:5432/tg" }
