@@ -1,7 +1,7 @@
-use jwt::FromJwt;
+use jwt::FromJws;
 use rocket::{fairing::AdHoc, get, launch, post, routes, State};
 use rocket_contrib::{database, databases::postgres, json::Json};
-use types::GuestToken;
+use types::{AuthResultSet, GuestToken, HostToken};
 
 use crate::{config::Config, error::Error, session::Session, util::random_string};
 use id_contact_proto::{ClientUrlResponse, SessionOptions, StartRequestAuthOnly};
@@ -21,7 +21,7 @@ async fn session_options(
     guest_token: String,
     config: State<'_, Config>,
 ) -> Result<Json<SessionOptions>, Error> {
-    let guest_token = GuestToken::from_jwt(&guest_token, config.validator(), config.decrypter())?;
+    let guest_token = GuestToken::from_jws(&guest_token, config.guest_validator())?;
 
     let session_options = reqwest::get(format!(
         "{}/session_options/{}",
@@ -43,7 +43,7 @@ async fn start(
     config: State<'_, Config>,
     db: SessionDBConn,
 ) -> Result<Json<ClientUrlResponse>, Error> {
-    let guest_token = GuestToken::from_jwt(&guest_token, config.validator(), config.decrypter())?;
+    let guest_token = GuestToken::from_jws(&guest_token, config.validator())?;
 
     let attr_id = random_string(64);
     let purpose = guest_token.purpose.clone();
@@ -88,10 +88,44 @@ async fn auth_result(
     Session::register_auth_result(attr_id, auth_result, &db).await
 }
 
+#[get("/session_options/<host_token>")]
+async fn session_info(
+    host_token: String,
+    config: State<'_, Config>,
+    db: SessionDBConn,
+) -> Result<Json<AuthResultSet>, Error> {
+    let host_token = HostToken::from_jws(&host_token, config.host_validator())?;
+    let sessions = Session::find_by_room_id(host_token.room_id, &db).await?;
+
+    let auth_results: AuthResultSet = sessions
+        .into_iter()
+        .map(|s| {
+            (
+                s.guest_token.name,
+                s.auth_result
+                    .map(|r| {
+                        id_contact_jwt::decrypt_and_verify_auth_result(
+                            &r,
+                            config.validator(),
+                            config.decrypter(),
+                        )
+                        .ok()
+                    })
+                    .flatten(),
+            )
+        })
+        .collect();
+
+    Ok(Json(auth_results))
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![session_options, start, auth_result])
+        .mount(
+            "/",
+            routes![session_options, start, auth_result, session_info],
+        )
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }

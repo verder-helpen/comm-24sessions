@@ -1,11 +1,13 @@
 use core::str;
+use std::collections::HashMap;
 
+use id_contact_proto::AuthResult;
 use serde::{Deserialize, Serialize};
-use strum_macros::ToString;
+use strum_macros::{EnumString, ToString};
 
-use crate::jwt::FromJwt;
+use crate::jwt::FromJws;
 
-#[derive(Deserialize, Debug, Serialize, ToString, Clone)]
+#[derive(Deserialize, Debug, Serialize, ToString, Clone, EnumString)]
 #[strum(serialize_all = "snake_case")]
 pub enum SessionDomain {
     #[serde(rename = "user")]
@@ -16,11 +18,11 @@ pub enum SessionDomain {
 
 #[derive(Deserialize, Debug)]
 pub struct HostToken {
-    id: String,
-    domain: SessionDomain,
+    pub id: String,
+    pub domain: SessionDomain,
     #[serde(rename = "roomId")]
-    room_id: String,
-    instance: String,
+    pub room_id: String,
+    pub instance: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -37,6 +39,8 @@ pub struct GuestToken {
     pub instance: String,
 }
 
-impl FromJwt for GuestToken {}
+impl FromJws for GuestToken {}
 
-impl FromJwt for HostToken {}
+impl FromJws for HostToken {}
+
+pub type AuthResultSet = HashMap<String, Option<AuthResult>>;

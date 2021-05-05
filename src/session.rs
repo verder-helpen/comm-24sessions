@@ -1,13 +1,17 @@
-use id_contact_proto::AuthResult;
+use std::str::FromStr;
 
-use crate::{error::Error, types::GuestToken, SessionDBConn};
+use crate::{
+    error::Error,
+    types::{GuestToken, SessionDomain},
+    SessionDBConn,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Session {
-    guest_token: GuestToken,
-    auth_result: Option<AuthResult>,
-    attr_id: String,
+    pub guest_token: GuestToken,
+    pub auth_result: Option<String>,
+    pub attr_id: String,
 }
 
 impl Session {
@@ -41,7 +45,7 @@ impl Session {
                     &this.guest_token.purpose,
                     &this.guest_token.name,
                     &this.guest_token.instance,
-                    &this.attr_id
+                    &this.attr_id,
                 ],
             )
         })
@@ -74,7 +78,49 @@ impl Session {
         }
     }
 
-    pub async fn find_by_room_id(room_id: String) -> Result<Vec<Self>, Error> {
-        todo!();
+    pub async fn find_by_room_id(room_id: String, db: &SessionDBConn) -> Result<Vec<Self>, Error> {
+        let sessions = db
+            .run(move |c| -> Result<Vec<Session>, Error> {
+                let rows = c.query(
+                    "SELECT 
+                        session_id,
+                        room_id,
+                        domain,
+                        redirect_url,
+                        purpose,
+                        name,
+                        instance,
+                        attr_id,
+                        auth_result,
+                    FROM session 
+                    WHERE room_id = $1",
+                    &[&room_id],
+                )?;
+                if rows.len() == 0 {
+                    return Err(Error::NotFound);
+                }
+                rows.into_iter()
+                    .map(|r| -> Result<_, Error> {
+                        let domain = SessionDomain::from_str(r.get("domain"))?;
+                        let guest_token = GuestToken {
+                            id: r.get("session_id"),
+                            room_id: r.get("room_id"),
+                            domain,
+                            redirect_url: r.get("redirect_url"),
+                            purpose: r.get("purpose"),
+                            name: r.get("name"),
+                            instance: r.get("instance"),
+                        };
+                        Ok(Session {
+                            guest_token,
+                            attr_id: r.get("attr_id"),
+                            auth_result: r.get("auth_result"),
+                        })
+                    })
+                    .collect()
+            })
+            .await?;
+
+        Ok(sessions)
     }
 }

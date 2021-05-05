@@ -14,6 +14,8 @@ struct RawConfig {
 
     decryption_privkey: EncryptionKeyConfig,
     signature_pubkey: SignKeyConfig,
+    guest_signature_pubkey: SignKeyConfig,
+    host_signature_pubkey: SignKeyConfig,
 }
 
 #[derive(Debug, Deserialize)]
@@ -25,6 +27,8 @@ pub struct Config {
 
     decrypter: Box<dyn JweDecrypter>,
     validator: Box<dyn JwsVerifier>,
+    guest_validator: Box<dyn JwsVerifier>,
+    host_validator: Box<dyn JwsVerifier>,
 }
 
 // This tryfrom can be removed once try_from for fields lands in serde
@@ -38,6 +42,8 @@ impl TryFrom<RawConfig> for Config {
 
             decrypter: Box::<dyn JweDecrypter>::try_from(config.decryption_privkey)?,
             validator: Box::<dyn JwsVerifier>::try_from(config.signature_pubkey)?,
+            guest_validator: Box::<dyn JwsVerifier>::try_from(config.guest_signature_pubkey)?,
+            host_validator: Box::<dyn JwsVerifier>::try_from(config.host_signature_pubkey)?,
         })
     }
 }
@@ -51,10 +57,19 @@ impl Config {
         self.validator.as_ref()
     }
 
+    pub fn guest_validator(&self) -> &dyn JwsVerifier {
+        self.guest_validator.as_ref()
+    }
+
+    pub fn host_validator(&self) -> &dyn JwsVerifier {
+        self.host_validator.as_ref()
+    }
+
     pub fn internal_url(&self) -> &str {
         &self.internal_url
     }
 
+    #[allow(dead_code)]
     pub fn external_url(&self) -> &str {
         &self.external_url
     }

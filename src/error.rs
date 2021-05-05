@@ -13,6 +13,8 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error("JSON Error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("Parse Error: {0}")]
+    Parse(#[from] strum::ParseError),
 }
 
 impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
