@@ -14,8 +14,8 @@ struct RawConfig {
 
     decryption_privkey: EncryptionKeyConfig,
     signature_pubkey: SignKeyConfig,
-    guest_signature_pubkey: SignKeyConfig,
-    host_signature_pubkey: SignKeyConfig,
+    guest_signature_secret: String,
+    host_signature_secret: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -35,6 +35,13 @@ pub struct Config {
 impl TryFrom<RawConfig> for Config {
     type Error = Error;
     fn try_from(config: RawConfig) -> Result<Config, Error> {
+        let guest_validator = josekit::jws::alg::hmac::HmacJwsAlgorithm::Hs256
+            .verifier_from_bytes(config.guest_signature_secret)
+            .unwrap();
+        let host_validator = josekit::jws::alg::hmac::HmacJwsAlgorithm::Hs256
+            .verifier_from_bytes(config.host_signature_secret)
+            .unwrap();
+
         Ok(Config {
             internal_url: config.internal_url,
             external_url: config.external_url,
@@ -42,8 +49,8 @@ impl TryFrom<RawConfig> for Config {
 
             decrypter: Box::<dyn JweDecrypter>::try_from(config.decryption_privkey)?,
             validator: Box::<dyn JwsVerifier>::try_from(config.signature_pubkey)?,
-            guest_validator: Box::<dyn JwsVerifier>::try_from(config.guest_signature_pubkey)?,
-            host_validator: Box::<dyn JwsVerifier>::try_from(config.host_signature_pubkey)?,
+            guest_validator: Box::new(guest_validator),
+            host_validator: Box::new(host_validator),
         })
     }
 }

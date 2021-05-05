@@ -45,3 +45,8 @@ pub trait FromJws: Sized + DeserializeOwned {
         Ok(payload)
     }
 }
+
+
+pub fn hmac256_validator(key: &str) {
+    
+}

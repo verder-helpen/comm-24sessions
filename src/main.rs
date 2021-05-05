@@ -88,7 +88,7 @@ async fn auth_result(
     Session::register_auth_result(attr_id, auth_result, &db).await
 }
 
-#[get("/session_options/<host_token>")]
+#[get("/session_info/<host_token>")]
 async fn session_info(
     host_token: String,
     config: State<'_, Config>,
@@ -124,7 +124,7 @@ fn rocket() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![session_options, start, auth_result, session_info],
+            routes![session_options, start, auth_result, session_info,],
         )
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
