@@ -4,7 +4,7 @@ use rocket_contrib::{database, databases::postgres, json::Json};
 use types::{AuthResultSet, GuestToken, HostToken};
 
 use crate::{config::Config, error::Error, session::Session, util::random_string};
-use id_contact_proto::{ClientUrlResponse, SessionOptions, StartRequestAuthOnly};
+use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 
 mod config;
 mod error;
@@ -15,26 +15,6 @@ mod util;
 
 #[database("session")]
 pub struct SessionDBConn(postgres::Client);
-
-#[get("/session_options/<guest_token>")]
-async fn session_options(
-    guest_token: String,
-    config: State<'_, Config>,
-) -> Result<Json<SessionOptions>, Error> {
-    let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
-
-    let session_options = reqwest::get(format!(
-        "{}/session_options/{}",
-        config.core_url(),
-        &guest_token.purpose
-    ))
-    .await?
-    .text()
-    .await?;
-
-    let session_options = serde_json::from_str::<SessionOptions>(&session_options)?;
-    Ok(Json(session_options))
-}
 
 #[get("/start/<auth_method>/<guest_token>")]
 async fn start(
@@ -122,10 +102,7 @@ async fn session_info(
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount(
-            "/",
-            routes![session_options, start, auth_result, session_info,],
-        )
+        .mount("/", routes![start, auth_result, session_info,])
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }
