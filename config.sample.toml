@@ -1,6 +1,5 @@
 [global]
 internal_url = "http://comm-24sessions:8000"
-external_url = "https://comm-24sessions.idcontact.test.tweede.golf"
 core_url = "http://core:8000"
 
 guest_signature_secret= "9e4ed6fdc6f7b8fb78f500d3abf3a042412140703249e2fe5671ecdab7e694bb"
