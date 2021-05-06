@@ -23,6 +23,8 @@ impl Session {
         }
     }
 
+    /// Persist a sessions. This can only be done for newly created sessions,
+    /// as the session id is unique.
     pub async fn persist(&self, db: &SessionDBConn) -> Result<(), Error> {
         let this = self.clone();
         db.run(move |c| {
@@ -73,10 +75,9 @@ impl Session {
             })
             .await?;
 
-        if n == 1 {
-            Ok(())
-        } else {
-            Err(Error::NotFound)
+        match n {
+            1 => Ok(()),
+            _ => Err(Error::NotFound),
         }
     }
 
