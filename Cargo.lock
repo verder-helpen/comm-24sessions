@@ -163,6 +163,7 @@ dependencies = [
 name = "comm-24sessions"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "id-contact-jwt",
  "id-contact-proto",
  "josekit",

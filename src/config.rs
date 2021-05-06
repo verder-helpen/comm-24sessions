@@ -1,7 +1,10 @@
 use crate::error::Error;
 
 use id_contact_jwt::{EncryptionKeyConfig, SignKeyConfig};
-use josekit::{jwe::JweDecrypter, jws::JwsVerifier};
+use josekit::{
+    jwe::JweDecrypter,
+    jws::{alg::hmac::HmacJwsAlgorithm, JwsVerifier},
+};
 use serde::Deserialize;
 
 use std::convert::TryFrom;
@@ -35,10 +38,10 @@ pub struct Config {
 impl TryFrom<RawConfig> for Config {
     type Error = Error;
     fn try_from(config: RawConfig) -> Result<Config, Error> {
-        let guest_validator = josekit::jws::alg::hmac::HmacJwsAlgorithm::Hs256
+        let guest_validator = HmacJwsAlgorithm::Hs256
             .verifier_from_bytes(config.guest_signature_secret)
             .unwrap();
-        let host_validator = josekit::jws::alg::hmac::HmacJwsAlgorithm::Hs256
+        let host_validator = HmacJwsAlgorithm::Hs256
             .verifier_from_bytes(config.host_signature_secret)
             .unwrap();
 

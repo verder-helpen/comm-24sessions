@@ -35,8 +35,9 @@ impl Session {
                 purpose,
                 name,
                 instance,
-                attr_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+                attr_id,
+                auth_result
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
                 &[
                     &this.guest_token.id,
                     &this.guest_token.room_id,
@@ -46,6 +47,7 @@ impl Session {
                     &this.guest_token.name,
                     &this.guest_token.instance,
                     &this.attr_id,
+                    &this.auth_result,
                 ],
             )
         })
@@ -91,7 +93,7 @@ impl Session {
                         name,
                         instance,
                         attr_id,
-                        auth_result,
+                        auth_result
                     FROM session 
                     WHERE room_id = $1",
                     &[&room_id],

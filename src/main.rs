@@ -1,4 +1,4 @@
-use jwt::FromJws;
+use jwt::From24SessionsJwt;
 use rocket::{fairing::AdHoc, get, launch, post, routes, State};
 use rocket_contrib::{database, databases::postgres, json::Json};
 use types::{AuthResultSet, GuestToken, HostToken};
@@ -21,7 +21,7 @@ async fn session_options(
     guest_token: String,
     config: State<'_, Config>,
 ) -> Result<Json<SessionOptions>, Error> {
-    let guest_token = GuestToken::from_jws(&guest_token, config.guest_validator())?;
+    let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
 
     let session_options = reqwest::get(format!(
         "{}/session_options/{}",
@@ -43,7 +43,7 @@ async fn start(
     config: State<'_, Config>,
     db: SessionDBConn,
 ) -> Result<Json<ClientUrlResponse>, Error> {
-    let guest_token = GuestToken::from_jws(&guest_token, config.validator())?;
+    let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
 
     let attr_id = random_string(64);
     let purpose = guest_token.purpose.clone();
@@ -94,7 +94,7 @@ async fn session_info(
     config: State<'_, Config>,
     db: SessionDBConn,
 ) -> Result<Json<AuthResultSet>, Error> {
-    let host_token = HostToken::from_jws(&host_token, config.host_validator())?;
+    let host_token = HostToken::from_24sessions_jwt(&host_token, config.host_validator())?;
     let sessions = Session::find_by_room_id(host_token.room_id, &db).await?;
 
     let auth_results: AuthResultSet = sessions

@@ -15,6 +15,8 @@ pub enum Error {
     Json(#[from] serde_json::Error),
     #[error("Parse Error: {0}")]
     Parse(#[from] strum::ParseError),
+    #[error("Base64 Error: {0}")]
+    Base64(#[from] base64::DecodeError),
 }
 
 impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
