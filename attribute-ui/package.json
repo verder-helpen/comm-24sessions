@@ -9,10 +9,9 @@
   "author": "Henk Dieter Oordt <hd@oordt.dev>",
   "license": "UNLICENCED",
   "devDependencies": {
+    "@material-ui/core": "^4.11.4",
     "@parcel/transformer-sass": "2.0.0-beta.2",
     "@types/react": "^17.0.0",
-    "axios": "0.21.1",
-    "marx-css": "^3.0.8",
     "parcel": "^2.0.0-beta.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -21,8 +20,5 @@
   "browserslist": [
     "last 2 Chrome versions",
     "last 2 Firefox versions"
-  ],
-  "dependencies": {
-    "@material-ui/core": "^4.11.4"
-  }
+  ]
 }
