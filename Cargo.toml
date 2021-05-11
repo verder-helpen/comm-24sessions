@@ -1,5 +1,5 @@
 [package]
-name = "comm-24sessions"
+name = "id-contact-24sessions"
 authors = ["Henk Dieter Oordt <hd@oordt.dev>"]
 version = "0.1.0"
 edition = "2018"
