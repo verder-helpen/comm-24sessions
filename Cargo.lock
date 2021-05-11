@@ -160,25 +160,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "comm-24sessions"
-version = "0.1.0"
-dependencies = [
- "id-contact-jwt",
- "id-contact-proto",
- "josekit",
- "postgres",
- "rand",
- "reqwest",
- "rocket",
- "rocket_contrib",
- "serde",
- "serde_json",
- "strum",
- "strum_macros",
- "thiserror",
-]
-
-[[package]]
 name = "const_fn"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -631,6 +612,25 @@ dependencies = [
  "native-tls",
  "tokio",
  "tokio-native-tls",
+]
+
+[[package]]
+name = "id-contact-24sessions"
+version = "0.1.0"
+dependencies = [
+ "id-contact-jwt",
+ "id-contact-proto",
+ "josekit",
+ "postgres",
+ "rand",
+ "reqwest",
+ "rocket",
+ "rocket_contrib",
+ "serde",
+ "serde_json",
+ "strum",
+ "strum_macros",
+ "thiserror",
 ]
 
 [[package]]
