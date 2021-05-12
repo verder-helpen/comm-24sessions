@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AttrCard } from './AttrCard';
 
-type Attrubutes = {
+type Attributes = {
     [Name in string]: {
         attributes: {
             [Key in string]: string
@@ -21,7 +21,7 @@ export const App = () => {
 
     const poll = () => fetch(`${serverUrl}/session_info/${hostToken}`).then(r => r.json())
 
-    const [attrs, setAttrs] = useState<Attrubutes>(null);
+    const [attrs, setAttrs] = useState<Attributes>(null);
 
     // Poll backend to check whether attributes have been received for current session
     useEffect(() => {
