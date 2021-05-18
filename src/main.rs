@@ -16,7 +16,7 @@ mod util;
 #[database("session")]
 pub struct SessionDBConn(postgres::Client);
 
-#[get("/start/<auth_method>/<guest_token>")]
+#[post("/start/<auth_method>/<guest_token>")]
 async fn start(
     auth_method: String,
     guest_token: String,
