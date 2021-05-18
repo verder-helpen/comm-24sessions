@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AttrCard } from './AttrCard';
 import { NoAttrs } from './NoAttrs';
+import { PoweredBy } from './PoweredBy';
 
 type Attributes = {
     [Name in string]: {
@@ -40,6 +41,7 @@ export const App = () => {
                     <AttrCard key={name} name={name} attributes={attributes} />
                 ))
                 : <NoAttrs />}
+            <PoweredBy />
         </div>
     </>)
 }
