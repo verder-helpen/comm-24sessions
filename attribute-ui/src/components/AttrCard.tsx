@@ -15,7 +15,7 @@ export const AttrCard = ({ name, attributes }: Props) => (
             <span className="attr-value">{name}</span>
         </div>
         {Object.entries(attributes).map(([key, value]) => (
-            <div className="attr">
+            <div className="attr" key={key}>
                 <span className="attr-key">{key}:</span>
                 <span className="attr-value attr-badge"><VpnKeyIcon htmlColor="gray" fontSize="inherit"/>{value}</span>
             </div>
