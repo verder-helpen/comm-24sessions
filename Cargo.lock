@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "id-contact-jwt"
 version = "0.1.0"
-source = "git+https://github.com/id-contact/id-contact-jwt.git#953e98e15f39ef4a3b114a3c874427e68932a585"
+source = "git+https://github.com/id-contact/id-contact-jwt.git#0bd6f5c01a3076c9557ecb9268a7c36b8693d44d"
 dependencies = [
  "id-contact-proto",
  "josekit",
@@ -1308,7 +1308,7 @@ dependencies = [
 [[package]]
 name = "rocket"
 version = "0.5.0-dev"
-source = "git+https://github.com/SergioBenitez/Rocket#3a7559edcec7c443e68e22e038aaa2d90ef27c23"
+source = "git+https://github.com/SergioBenitez/Rocket#d03a07b1832a2491abf76212f76339f193adb910"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -1344,7 +1344,7 @@ dependencies = [
 [[package]]
 name = "rocket_codegen"
 version = "0.5.0-dev"
-source = "git+https://github.com/SergioBenitez/Rocket#3a7559edcec7c443e68e22e038aaa2d90ef27c23"
+source = "git+https://github.com/SergioBenitez/Rocket#d03a07b1832a2491abf76212f76339f193adb910"
 dependencies = [
  "devise",
  "glob",
@@ -1382,7 +1382,7 @@ dependencies = [
 [[package]]
 name = "rocket_http"
 version = "0.5.0-dev"
-source = "git+https://github.com/SergioBenitez/Rocket#3a7559edcec7c443e68e22e038aaa2d90ef27c23"
+source = "git+https://github.com/SergioBenitez/Rocket#d03a07b1832a2491abf76212f76339f193adb910"
 dependencies = [
  "cookie",
  "either",

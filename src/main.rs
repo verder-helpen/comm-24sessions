@@ -20,7 +20,7 @@ pub struct SessionDBConn(postgres::Client);
 async fn start(
     auth_method: String,
     guest_token: String,
-    config: State<'_, Config>,
+    config: &State<Config>,
     db: SessionDBConn,
 ) -> Result<Json<ClientUrlResponse>, Error> {
     let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
@@ -57,7 +57,7 @@ async fn start(
 async fn auth_result(
     attr_id: String,
     auth_result: String,
-    config: State<'_, Config>,
+    config: &State<Config>,
     db: SessionDBConn,
 ) -> Result<(), Error> {
     id_contact_jwt::decrypt_and_verify_auth_result(
@@ -71,7 +71,7 @@ async fn auth_result(
 #[get("/session_info/<host_token>")]
 async fn session_info(
     host_token: String,
-    config: State<'_, Config>,
+    config: &State<Config>,
     db: SessionDBConn,
 ) -> Result<Json<AuthResultSet>, Error> {
     let host_token = HostToken::from_24sessions_jwt(&host_token, config.host_validator())?;
@@ -84,7 +84,7 @@ async fn session_info(
                 s.guest_token.name,
                 s.auth_result
                     .map(|r| {
-                        id_contact_jwt::decrypt_and_verify_auth_result(
+                        id_contact_jwt::dangerous_decrypt_auth_result_without_verifying_expiration(
                             &r,
                             config.validator(),
                             config.decrypter(),
