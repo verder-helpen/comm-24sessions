@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AttrCard } from './AttrCard';
+import { NoAttrs } from './NoAttrs';
 
 type Attributes = {
     [Name in string]: {
@@ -26,17 +27,19 @@ export const App = () => {
     // Poll backend to check whether attributes have been received for current session
     useEffect(() => {
         poll().then(setAttrs);
-        const interval = setInterval(() => void poll().then(setAttrs), 3000);
+        const interval = setInterval(() => void poll().then(setAttrs), 5000);
         return () => clearInterval(interval);
     }, [])
 
-    if (!attrs || Object.keys(attrs).length === 0) {
-        return <div>There are no identified guests yet</div>
-    }  
-    
+    const attrsAvailable = attrs && Object.keys(attrs).length > 0;
+
     return (<>
-        {Object.entries(attrs).map(([name, {attributes}]) => {
-            return <AttrCard key={name} name={name} attributes={attributes}/>
-        })}
-    </>);
+        <div className="id-contact">
+            {attrsAvailable
+                ? Object.entries(attrs).map(([name, { attributes }]) => (
+                    <AttrCard key={name} name={name} attributes={attributes} />
+                ))
+                : <NoAttrs />}
+        </div>
+    </>)
 }

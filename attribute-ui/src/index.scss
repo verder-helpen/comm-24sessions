@@ -1,0 +1,78 @@
+$background: whitesmoke;
+$border: lightgray;
+$background-card: white;
+$font-light: gray;
+
+
+html, body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: $background;
+    font-size: 17px;
+}
+
+.id-contact {
+    .attr-card {
+        background-color: $background-card;
+        width: 500px;
+        margin: 20px auto;
+        border-radius: 10px;
+        border: 1px solid $border;
+        padding-bottom: 5px;
+        font-weight: bold;
+
+        .attr {
+            padding: 8px;
+            font-size: 17px;
+            
+            .attr-key {
+                font-size: 15px;
+                text-transform: uppercase;
+                margin-right: 10px;
+                color: $font-light;
+                
+                display: inline-block;
+            }
+            .attr-value {
+                font-size: 17px;
+                display: inline-block;
+                padding: 7px 10px;
+                
+            }
+            .attr-badge {
+                background-color: $background;
+                border-radius: 20px;
+                border: 1px solid $border;
+                
+                svg {
+                    top: -2px;
+                    position: relative;
+                    vertical-align: middle;
+                    font-size: 20px;
+                    margin-right: 5px;
+                }
+            }
+            
+        }
+
+        .attr-header {
+            border-bottom: 1px solid $border;
+            height: inherit;
+            padding: 7px 0;
+            .attr-value {
+                display: inline-block;
+                position: relative;
+                padding-left: 7px;
+                font-size: 17px;
+                top: -5px
+            }
+
+            .check {
+                margin: 5px 10px;
+                color: green;
+                font-size: 30px;
+            }
+        }
+    }
+}
