@@ -77,7 +77,7 @@ async fn session_info(
     let host_token = HostToken::from_24sessions_jwt(&host_token, config.host_validator())?;
     let sessions = match Session::find_by_room_id(host_token.room_id, &db).await {
         Ok(s) => s,
-        // Return empty object of no session was found
+        // Return empty object if no session was found
         Err(Error::NotFound) => return Ok(Json(AuthResultSet::new())),
         e => e?
     };
