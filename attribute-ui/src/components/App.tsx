@@ -37,8 +37,8 @@ export const App = () => {
     return (<>
         <div className="id-contact">
             {attrsAvailable
-                ? Object.entries(attrs).map(([name, { attributes }]) => (
-                    <AttrCard key={name} name={name} attributes={attributes} />
+                ? Object.entries(attrs).map(([name, record]) => (
+                    record ? <AttrCard key={name} name={name} attributes={record.attributes} /> : <></>
                 ))
                 : <NoAttrs />}
             <PoweredBy />
