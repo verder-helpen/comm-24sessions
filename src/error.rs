@@ -1,7 +1,6 @@
-use crate::{jwt::JwtError, rocket};
+use crate::jwt::JwtError;
 use rocket::{
     http::{ContentType, Status},
-    response::{Builder as ResponseBuilder, Responder},
     Response,
 };
 use rocket_contrib::json;
