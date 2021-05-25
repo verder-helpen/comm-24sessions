@@ -32,7 +32,7 @@ pub struct GuestToken {
     #[serde(rename = "redirectUrl")]
     pub redirect_url: String,
     #[serde(rename = "authPurpose")]
-    pub purpose: String,
+    pub purpose: Option<String>,
     pub name: String,
     #[serde(rename = "roomId")]
     pub room_id: String,

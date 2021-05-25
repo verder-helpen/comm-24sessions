@@ -16,8 +16,8 @@ mod util;
 #[database("session")]
 pub struct SessionDBConn(postgres::Client);
 
-#[post("/start/<auth_method>/<guest_token>")]
 async fn start(
+    purpose: Option<String>,
     auth_method: String,
     guest_token: String,
     config: &State<Config>,
@@ -26,11 +26,18 @@ async fn start(
     let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
 
     let attr_id = random_string(64);
-    let purpose = guest_token.purpose.clone();
+    let purpose = guest_token
+        .purpose
+        .clone()
+        .or(purpose)
+        .ok_or(Error::BadRequest(
+            "No purpose found in route or guest token",
+        ))?;
+    dbg!(&purpose);
     let comm_url = guest_token.redirect_url.clone();
     let attr_url = format!("{}/auth_result/{}", config.internal_url(), attr_id);
 
-    let session = Session::new(guest_token, attr_id);
+    let session = Session::new(guest_token, attr_id, purpose.clone());
     session.persist(&db).await?;
 
     let start_request = StartRequestAuthOnly {
@@ -51,6 +58,27 @@ async fn start(
 
     let client_url_response = serde_json::from_str::<ClientUrlResponse>(&client_url_response)?;
     Ok(Json(client_url_response))
+}
+
+#[post("/start/<purpose>/<auth_method>/<guest_token>")]
+async fn start_with_purpose(
+    purpose: Option<String>,
+    auth_method: String,
+    guest_token: String,
+    config: &State<Config>,
+    db: SessionDBConn,
+) -> Result<Json<ClientUrlResponse>, Error> {
+    start(purpose, auth_method, guest_token, config, db).await
+}
+
+#[post("/start/<auth_method>/<guest_token>")]
+async fn start_without_purpose(
+    auth_method: String,
+    guest_token: String,
+    config: &State<Config>,
+    db: SessionDBConn,
+) -> Result<Json<ClientUrlResponse>, Error> {
+    start(None, auth_method, guest_token, config, db).await
 }
 
 #[post("/auth_result/<attr_id>", data = "<auth_result>")]
@@ -79,7 +107,7 @@ async fn session_info(
         Ok(s) => s,
         // Return empty object if no session was found
         Err(Error::NotFound) => return Ok(Json(AuthResultSet::new())),
-        e => e?
+        e => e?,
     };
 
     let auth_results: AuthResultSet = sessions
@@ -107,7 +135,7 @@ async fn session_info(
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![start, auth_result, session_info,])
+        .mount("/", routes![start_with_purpose, start_without_purpose, auth_result, session_info,])
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }
