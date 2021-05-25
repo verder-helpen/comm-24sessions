@@ -1,10 +1,18 @@
-use crate::jwt::JwtError;
+use crate::{jwt::JwtError, rocket};
+use rocket::{
+    http::{ContentType, Status},
+    response::{Builder as ResponseBuilder, Responder},
+    Response,
+};
+use rocket_contrib::json;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Not found")]
     NotFound,
+    #[error("Bad Request: {0}")]
+    BadRequest(&'static str),
     #[error("JWE Error: {0}")]
     JWE(#[from] JwtError),
     #[error("Postgres Error: {0}")]
@@ -19,8 +27,23 @@ pub enum Error {
 
 impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
     fn respond_to(self, request: &'r rocket::Request<'_>) -> rocket::response::Result<'o> {
-        let debug_error = rocket::response::Debug::from(self);
-        debug_error.respond_to(request)
+        use Error::*;
+        let (body, status) = match &self {
+            NotFound => (json!({"error": "NotFound"}), Status::NotFound),
+            BadRequest(m) => (
+                json!({"error": "BadRequest", "detail": m}),
+                Status::BadRequest,
+            ),
+            JWE(e) => (
+                json!({"error": "BadRequest", "detail": format!("{}", e)}),
+                Status::BadRequest,
+            ),
+            _ => return rocket::response::Debug::from(self).respond_to(request),
+        };
+        Ok(Response::build_from(body.respond_to(request).unwrap())
+            .status(status)
+            .header(ContentType::JSON)
+            .finalize())
     }
 }
 
