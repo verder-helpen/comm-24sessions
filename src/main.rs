@@ -33,11 +33,11 @@ async fn start(
         .ok_or(Error::BadRequest(
             "No purpose found in route or guest token",
         ))?;
-    dbg!(&purpose);
     let comm_url = guest_token.redirect_url.clone();
     let attr_url = format!("{}/auth_result/{}", config.internal_url(), attr_id);
 
     let session = Session::new(guest_token, attr_id, purpose.clone());
+
     session.persist(&db).await?;
 
     let start_request = StartRequestAuthOnly {
@@ -135,7 +135,15 @@ async fn session_info(
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![start_with_purpose, start_without_purpose, auth_result, session_info,])
+        .mount(
+            "/",
+            routes![
+                start_with_purpose,
+                start_without_purpose,
+                auth_result,
+                session_info,
+            ],
+        )
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }

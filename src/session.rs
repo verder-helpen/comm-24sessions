@@ -29,9 +29,10 @@ impl Session {
     /// as the session id is unique.
     pub async fn persist(&self, db: &SessionDBConn) -> Result<(), Error> {
         let this = self.clone();
-        db.run(move |c| {
-            c.execute(
-                "INSERT INTO session (
+        let res = db
+            .run(move |c| {
+                c.execute(
+                    "INSERT INTO session (
                 session_id,
                 room_id,
                 domain,
@@ -42,21 +43,28 @@ impl Session {
                 attr_id,
                 auth_result
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
-                &[
-                    &this.guest_token.id,
-                    &this.guest_token.room_id,
-                    &this.guest_token.domain.to_string(),
-                    &this.guest_token.redirect_url,
-                    &this.purpose,
-                    &this.guest_token.name,
-                    &this.guest_token.instance,
-                    &this.attr_id,
-                    &this.auth_result,
-                ],
-            )
-        })
-        .await?;
+                    &[
+                        &this.guest_token.id,
+                        &this.guest_token.room_id,
+                        &this.guest_token.domain.to_string(),
+                        &this.guest_token.redirect_url,
+                        &this.purpose,
+                        &this.guest_token.name,
+                        &this.guest_token.instance,
+                        &this.attr_id,
+                        &this.auth_result,
+                    ],
+                )
+            })
+            .await;
 
+        res.map_err(|e| {
+            if let Some(&postgres::error::SqlState::UNIQUE_VIOLATION) = e.code() {
+                Error::BadRequest("A session with that ID already exists")
+            } else {
+                Error::from(e)
+            }
+        })?;
         Ok(())
     }
 
