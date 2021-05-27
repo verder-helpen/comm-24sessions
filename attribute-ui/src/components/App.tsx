@@ -7,7 +7,8 @@ type Attributes = {
     [Name in string]: {
         attributes: {
             [Key in string]: string
-        }
+        },
+        name: string,
     }
 }
 
@@ -37,8 +38,8 @@ export const App = () => {
     return (<>
         <div className="id-contact">
             {attrsAvailable
-                ? Object.entries(attrs).map(([name, record]) => (
-                    record ? <AttrCard key={name} name={name} attributes={record.attributes} /> : <></>
+                ? Object.entries(attrs).map(([guestId, record]) => (
+                    record ? <AttrCard key={guestId} name={record.name} attributes={record.attributes} /> : <></>
                 ))
                 : <NoAttrs />}
             <PoweredBy />

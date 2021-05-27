@@ -43,4 +43,10 @@ impl From24SessionsJwt for GuestToken {}
 
 impl From24SessionsJwt for HostToken {}
 
-pub type AuthResultSet = HashMap<String, Option<AuthResult>>;
+#[derive(Serialize, Debug)]
+pub struct GuestAuthResult {
+    pub attributes: Option<HashMap<String, String>>,
+    pub name: String,
+}
+
+pub type AuthResultSet = HashMap<String, GuestAuthResult>;

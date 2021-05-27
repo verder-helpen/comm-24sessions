@@ -1,7 +1,7 @@
 use jwt::From24SessionsJwt;
 use rocket::{fairing::AdHoc, get, launch, post, routes, State};
 use rocket_contrib::{database, databases::postgres, json::Json};
-use types::{AuthResultSet, GuestToken, HostToken};
+use types::{AuthResultSet, GuestAuthResult, GuestToken, HostToken};
 
 use crate::{config::Config, error::Error, session::Session, util::random_string};
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
@@ -114,21 +114,25 @@ async fn session_info(
         .into_iter()
         .map(|s| {
             (
-                s.guest_token.name,
-                s.auth_result
-                    .map(|r| {
-                        id_contact_jwt::dangerous_decrypt_auth_result_without_verifying_expiration(
-                            &r,
-                            config.validator(),
-                            config.decrypter(),
-                        )
-                        .ok()
+                s.guest_token.id,
+                GuestAuthResult {
+                    name: s.guest_token.name,
+                    attributes: s.auth_result
+                        .map(|r| {
+                                id_contact_jwt::dangerous_decrypt_auth_result_without_verifying_expiration(
+                                    &r,
+                                    config.validator(),
+                                    config.decrypter(),
+                            )
+                            .map(|r| r.attributes)
+                            .ok()
                     })
-                    .flatten(),
+                    .flatten()
+                    .flatten()
+            },
             )
         })
         .collect();
-
     Ok(Json(auth_results))
 }
 
