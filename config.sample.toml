@@ -1,6 +1,6 @@
 [global]
 internal_url = "http://comm-24sessions:8000"
-external_url = "http://comm-24sessions:8000"
+external_url = "https://comm-24sessions.idcontact.test.tweede.golf"
 widget_url = "https://poc.idcontact.test.tweede.golf/contact"
 core_url = "http://core:8000"
 
@@ -57,7 +57,7 @@ TQIDAQAB
 -----END PUBLIC KEY-----
 """
 
-[global.signature_privkey]
+[global.widget_signature_privkey]
 type = "RSA"
 key = """
 -----BEGIN PRIVATE KEY-----
