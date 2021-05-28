@@ -1,9 +1,15 @@
 use jwt::From24SessionsJwt;
-use rocket::{fairing::AdHoc, get, launch, post, routes, State};
+use rocket::{fairing::AdHoc, get, launch, post, response::Redirect, routes, State};
 use rocket_contrib::{database, databases::postgres, json::Json};
 use types::{AuthResultSet, GuestAuthResult, GuestToken, HostToken};
 
-use crate::{config::Config, error::Error, session::Session, util::random_string};
+use crate::{
+    config::Config,
+    error::Error,
+    session::Session,
+    types::{StartRequest, WidgetRedirectParams},
+    util::random_string,
+};
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 
 mod config;
@@ -16,23 +22,38 @@ mod util;
 #[database("session")]
 pub struct SessionDBConn(postgres::Client);
 
-async fn start(
-    purpose: Option<String>,
-    auth_method: String,
+#[get("/init/<purpose>/<guest_token>")]
+async fn init(
+    purpose: String,
     guest_token: String,
+    config: &State<Config>,
+) -> Result<Redirect, Error> {
+    let _ = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
+
+    let redirect_params = WidgetRedirectParams {
+        purpose,
+        start_url: format!("{}/start/{}", config.external_url(), guest_token),
+        display_name: config.display_name().to_owned(),
+    };
+    let redirect_params = redirect_params.to_jws(config.signer())?;
+    let uri = format!("{}/{}", config.widget_url(), redirect_params);
+    dbg!(&uri);
+    Ok(Redirect::to(uri))
+}
+
+#[post("/start/<guest_token>", data = "<start_request>")]
+async fn start(
+    guest_token: String,
+    start_request: String,
     config: &State<Config>,
     db: SessionDBConn,
 ) -> Result<Json<ClientUrlResponse>, Error> {
     let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
-
+    let StartRequest {
+        purpose,
+        auth_method,
+    } = serde_json::from_str(&start_request)?;
     let attr_id = random_string(64);
-    let purpose = guest_token
-        .purpose
-        .clone()
-        .or(purpose)
-        .ok_or(Error::BadRequest(
-            "No purpose found in route or guest token",
-        ))?;
     let comm_url = guest_token.redirect_url.clone();
     let attr_url = format!("{}/auth_result/{}", config.internal_url(), attr_id);
 
@@ -58,27 +79,6 @@ async fn start(
 
     let client_url_response = serde_json::from_str::<ClientUrlResponse>(&client_url_response)?;
     Ok(Json(client_url_response))
-}
-
-#[post("/start/<purpose>/<auth_method>/<guest_token>")]
-async fn start_with_purpose(
-    purpose: Option<String>,
-    auth_method: String,
-    guest_token: String,
-    config: &State<Config>,
-    db: SessionDBConn,
-) -> Result<Json<ClientUrlResponse>, Error> {
-    start(purpose, auth_method, guest_token, config, db).await
-}
-
-#[post("/start/<auth_method>/<guest_token>")]
-async fn start_without_purpose(
-    auth_method: String,
-    guest_token: String,
-    config: &State<Config>,
-    db: SessionDBConn,
-) -> Result<Json<ClientUrlResponse>, Error> {
-    start(None, auth_method, guest_token, config, db).await
 }
 
 #[post("/auth_result/<attr_id>", data = "<auth_result>")]
@@ -132,6 +132,7 @@ async fn session_info(
             },
             )
         })
+        .filter(|(_, g)| g.attributes.is_some())
         .collect();
     Ok(Json(auth_results))
 }
@@ -139,15 +140,7 @@ async fn session_info(
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount(
-            "/",
-            routes![
-                start_with_purpose,
-                start_without_purpose,
-                auth_result,
-                session_info,
-            ],
-        )
+        .mount("/", routes![init, start, auth_result, session_info,])
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }

@@ -120,7 +120,6 @@ impl Session {
                             room_id: r.get("room_id"),
                             domain,
                             redirect_url: r.get("redirect_url"),
-                            purpose: r.get("purpose"),
                             name: r.get("name"),
                             instance: r.get("instance"),
                         };
