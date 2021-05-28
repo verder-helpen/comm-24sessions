@@ -19,7 +19,7 @@ struct RawConfig {
 
     decryption_privkey: EncryptionKeyConfig,
     signature_pubkey: SignKeyConfig,
-    widget_signature_privkey: SignKeyConfig,
+    widget_signing_privkey: SignKeyConfig,
     guest_signature_secret: String,
     host_signature_secret: String,
 }
@@ -60,7 +60,7 @@ impl TryFrom<RawConfig> for Config {
 
             decrypter: Box::<dyn JweDecrypter>::try_from(config.decryption_privkey)?,
             validator: Box::<dyn JwsVerifier>::try_from(config.signature_pubkey)?,
-            widget_signer: Box::<dyn JwsSigner>::try_from(config.widget_signature_privkey)?,
+            widget_signer: Box::<dyn JwsSigner>::try_from(config.widget_signing_privkey)?,
             guest_validator: Box::new(guest_validator),
             host_validator: Box::new(host_validator),
         })

@@ -57,7 +57,7 @@ TQIDAQAB
 -----END PUBLIC KEY-----
 """
 
-[global.widget_signature_privkey]
+[global.widget_signing_privkey]
 type = "RSA"
 key = """
 -----BEGIN PRIVATE KEY-----
