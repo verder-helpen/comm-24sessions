@@ -35,9 +35,9 @@ async fn init(
         start_url: format!("{}/start/{}", config.external_url(), guest_token),
         display_name: config.display_name().to_owned(),
     };
-    let redirect_params = redirect_params.to_jws(config.signer())?;
+    let redirect_params = redirect_params.to_jws(config.widget_signer())?;
     let uri = format!("{}/{}", config.widget_url(), redirect_params);
-    dbg!(&uri);
+
     Ok(Redirect::to(uri))
 }
 

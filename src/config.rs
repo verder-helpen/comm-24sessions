@@ -19,7 +19,7 @@ struct RawConfig {
 
     decryption_privkey: EncryptionKeyConfig,
     signature_pubkey: SignKeyConfig,
-    signature_privkey: SignKeyConfig,
+    widget_signature_privkey: SignKeyConfig,
     guest_signature_secret: String,
     host_signature_secret: String,
 }
@@ -35,7 +35,7 @@ pub struct Config {
 
     decrypter: Box<dyn JweDecrypter>,
     validator: Box<dyn JwsVerifier>,
-    signer: Box<dyn JwsSigner>,
+    widget_signer: Box<dyn JwsSigner>,
     guest_validator: Box<dyn JwsVerifier>,
     host_validator: Box<dyn JwsVerifier>,
 }
@@ -60,7 +60,7 @@ impl TryFrom<RawConfig> for Config {
 
             decrypter: Box::<dyn JweDecrypter>::try_from(config.decryption_privkey)?,
             validator: Box::<dyn JwsVerifier>::try_from(config.signature_pubkey)?,
-            signer: Box::<dyn JwsSigner>::try_from(config.signature_privkey)?,
+            widget_signer: Box::<dyn JwsSigner>::try_from(config.widget_signature_privkey)?,
             guest_validator: Box::new(guest_validator),
             host_validator: Box::new(host_validator),
         })
@@ -76,8 +76,8 @@ impl Config {
         self.validator.as_ref()
     }
 
-    pub fn signer(&self) -> &dyn JwsSigner {
-        self.signer.as_ref()
+    pub fn widget_signer(&self) -> &dyn JwsSigner {
+        self.widget_signer.as_ref()
     }
 
     pub fn guest_validator(&self) -> &dyn JwsVerifier {
