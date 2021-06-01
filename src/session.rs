@@ -12,12 +12,14 @@ pub struct Session {
     pub guest_token: GuestToken,
     pub auth_result: Option<String>,
     pub attr_id: String,
+    pub purpose: String,
 }
 
 impl Session {
-    pub fn new(guest_token: GuestToken, attr_id: String) -> Self {
+    pub fn new(guest_token: GuestToken, attr_id: String, purpose: String) -> Self {
         Self {
             attr_id,
+            purpose,
             guest_token,
             auth_result: None,
         }
@@ -27,9 +29,10 @@ impl Session {
     /// as the session id is unique.
     pub async fn persist(&self, db: &SessionDBConn) -> Result<(), Error> {
         let this = self.clone();
-        db.run(move |c| {
-            c.execute(
-                "INSERT INTO session (
+        let res = db
+            .run(move |c| {
+                c.execute(
+                    "INSERT INTO session (
                 session_id,
                 room_id,
                 domain,
@@ -40,21 +43,28 @@ impl Session {
                 attr_id,
                 auth_result
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
-                &[
-                    &this.guest_token.id,
-                    &this.guest_token.room_id,
-                    &this.guest_token.domain.to_string(),
-                    &this.guest_token.redirect_url,
-                    &this.guest_token.purpose,
-                    &this.guest_token.name,
-                    &this.guest_token.instance,
-                    &this.attr_id,
-                    &this.auth_result,
-                ],
-            )
-        })
-        .await?;
+                    &[
+                        &this.guest_token.id,
+                        &this.guest_token.room_id,
+                        &this.guest_token.domain.to_string(),
+                        &this.guest_token.redirect_url,
+                        &this.purpose,
+                        &this.guest_token.name,
+                        &this.guest_token.instance,
+                        &this.attr_id,
+                        &this.auth_result,
+                    ],
+                )
+            })
+            .await;
 
+        res.map_err(|e| {
+            if let Some(&postgres::error::SqlState::UNIQUE_VIOLATION) = e.code() {
+                Error::BadRequest("A session with that ID already exists")
+            } else {
+                Error::from(e)
+            }
+        })?;
         Ok(())
     }
 
@@ -110,11 +120,11 @@ impl Session {
                             room_id: r.get("room_id"),
                             domain,
                             redirect_url: r.get("redirect_url"),
-                            purpose: r.get("purpose"),
                             name: r.get("name"),
                             instance: r.get("instance"),
                         };
                         Ok(Session {
+                            purpose: r.get("purpose"),
                             guest_token,
                             attr_id: r.get("attr_id"),
                             auth_result: r.get("auth_result"),

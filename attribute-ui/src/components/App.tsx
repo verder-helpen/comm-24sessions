@@ -3,12 +3,15 @@ import { AttrCard } from './AttrCard';
 import { NoAttrs } from './NoAttrs';
 import { PoweredBy } from './PoweredBy';
 
-type Attributes = {
-    [Name in string]: {
-        attributes: {
-            [Key in string]: string
-        }
-    }
+type GuestAttributes = {
+    attributes: {
+        [Key in string]: string
+    },
+    name: string,
+}
+
+type SessionAttributes = {
+    [Id in string]: GuestAttributes
 }
 
 declare global {
@@ -21,14 +24,17 @@ export const App = () => {
     const serverUrl = window.SERVER_URL;
     const hostToken = window.location.pathname.substr(1);
 
-    const poll = () => fetch(`${serverUrl}/session_info/${hostToken}`).then(r => r.json())
+    const poll = (): Promise<SessionAttributes> => fetch(`${serverUrl}/session_info/${hostToken}`).then(r => r.json())
 
-    const [attrs, setAttrs] = useState<Attributes>(null);
+    const [attrs, setAttrs] = useState<GuestAttributes[]>(null);
 
+    const prepareAttrs = (s: SessionAttributes): GuestAttributes[] => 
+        Object.values(s)
+            .sort((record1, record2) => record1.name.localeCompare(record2.name));
     // Poll backend to check whether attributes have been received for current session
     useEffect(() => {
-        poll().then(setAttrs);
-        const interval = setInterval(() => void poll().then(setAttrs), 5000);
+        poll().then(s => setAttrs(prepareAttrs(s)));
+        const interval = setInterval(() => void poll().then(s => setAttrs(prepareAttrs(s))), 5000);
         return () => clearInterval(interval);
     }, [])
 
@@ -37,9 +43,10 @@ export const App = () => {
     return (<>
         <div className="id-contact">
             {attrsAvailable
-                ? Object.entries(attrs).map(([name, record]) => (
-                    record ? <AttrCard key={name} name={name} attributes={record.attributes} /> : <></>
-                ))
+                ? attrs
+                    .map((record, i) => (
+                        record ? <AttrCard key={i} name={record.name} attributes={record.attributes} /> : <></>
+                    ))
                 : <NoAttrs />}
             <PoweredBy />
         </div>
