@@ -97,7 +97,7 @@ export default function App({ purpose, comm_display_name } : {purpose: string, c
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
-                    comm_method: method.tag,
+                    auth_method: method.tag,
                     purpose: inputData.purpose,
                   }),
                 })
