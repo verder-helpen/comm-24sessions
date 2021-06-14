@@ -11,6 +11,7 @@ CREATE TABLE "session" (
     "instance" text NOT NULL,
     "attr_id" text NOT NULL,
     "auth_result" text,
+    "last_activity" timestamp NOT NULL,
     PRIMARY KEY ("id")
 );
 

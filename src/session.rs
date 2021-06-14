@@ -41,8 +41,9 @@ impl Session {
                 name,
                 instance,
                 attr_id,
-                auth_result
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+                auth_result,
+                last_activity
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now());",
                     &[
                         &this.guest_token.id,
                         &this.guest_token.room_id,
@@ -77,7 +78,7 @@ impl Session {
             .run(move |c| {
                 c.execute(
                     "UPDATE session 
-                    SET auth_result = $1
+                    SET (auth_result, last_activity) = ($1, now())
                     WHERE auth_result IS NULL 
                     AND attr_id = $2;",
                     &[&auth_result, &attr_id],
@@ -136,4 +137,15 @@ impl Session {
 
         Ok(sessions)
     }
+}
+
+pub async fn clean_db(db: &SessionDBConn) -> Result<(), Error> {
+    db.run(move |c| {
+        c.execute(
+            "DELETE FROM session WHERE last_activity < now() - INTERVAL '1 minute'",
+            &[],
+        )
+    })
+    .await?;
+    Ok(())
 }
