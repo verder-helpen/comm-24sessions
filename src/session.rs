@@ -96,7 +96,11 @@ impl Session {
         let sessions = db
             .run(move |c| -> Result<Vec<Session>, Error> {
                 let rows = c.query(
-                    "SELECT 
+                    "
+                    UPDATE session
+                    SET last_activity = now()
+                    WHERE room_id = $1
+                    RETURNING 
                         session_id,
                         room_id,
                         domain,
@@ -106,8 +110,7 @@ impl Session {
                         instance,
                         attr_id,
                         auth_result
-                    FROM session 
-                    WHERE room_id = $1",
+                    ",
                     &[&room_id],
                 )?;
                 if rows.len() == 0 {
@@ -142,7 +145,7 @@ impl Session {
 pub async fn clean_db(db: &SessionDBConn) -> Result<(), Error> {
     db.run(move |c| {
         c.execute(
-            "DELETE FROM session WHERE last_activity < now() - INTERVAL '1 minute'",
+            "DELETE FROM session WHERE last_activity < now() - INTERVAL '1 hour'",
             &[],
         )
     })
