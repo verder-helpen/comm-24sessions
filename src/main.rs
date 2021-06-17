@@ -137,10 +137,18 @@ async fn session_info(
     Ok(Json(auth_results))
 }
 
+#[get("/clean_db")]
+async fn clean_db(db: SessionDBConn) -> Result<(), Error> {
+    session::clean_db(&db).await
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![init, start, auth_result, session_info,])
+        .mount(
+            "/",
+            routes![init, start, auth_result, session_info, clean_db,],
+        )
         .attach(SessionDBConn::fairing())
         .attach(AdHoc::config::<Config>())
 }
