@@ -1,14 +1,15 @@
 import React from 'react';
 import DoneIcon from '@material-ui/icons/Done';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
-interface Props {
-    name: String,
-    attributes: {
-        [Key in string]: string
-    }
+
+type Attributes = [string, string];
+
+export type OrderedGuestAttributes = {
+    attributes: Attributes[],
+    name: string,
 }
 
-export const AttrCard = ({ name, attributes }: Props) => (
+export const AttrCard = ({ name, attributes }: OrderedGuestAttributes) => (
     <div className="attr-card">
         <div className="attr-header">
             <div className="attr-row">
@@ -17,7 +18,7 @@ export const AttrCard = ({ name, attributes }: Props) => (
             </div>
         </div>
         <div className="attr-body">
-        {Object.entries(attributes).map(([key, value]) => (
+        {Object.values(attributes).map(([key, value]) => (
             <div className="attr-row" key={key}>
                 <span className="attr-key">{key}:</span>
                 <span className="attr-badge">
