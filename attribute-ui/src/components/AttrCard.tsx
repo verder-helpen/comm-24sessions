@@ -2,8 +2,10 @@ import React from 'react';
 import DoneIcon from '@material-ui/icons/Done';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
 
+type Attributes = [string, string];
+
 export type OrderedGuestAttributes = {
-    attributes: [string, string][],
+    attributes: Attributes[],
     name: string,
 }
 
