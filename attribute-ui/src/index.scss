@@ -10,75 +10,102 @@ html, body {
     padding: 0;
     background-color: $background;
     font-size: 17px;
-    
 }
 
 .id-contact {
-    height: 370px;
-    width: 544px;
-    padding: 0;
-
+    padding: 10px 20px;
     display: flex;
     flex-direction: column;
+
     .attr-card {
+        display: block;
         font-weight: bold;
         background-color: $background-card;
-        width: 500px;
-        margin: 20px auto;
+        margin-bottom: 10px;
         border-radius: 10px;
         border: 1px solid $border;
         padding-bottom: 5px;
-        
-        .attr {
-            padding: 8px;
-            font-size: 17px;
+
+        font-size: 17px;
+
+        .attr-body {
+            padding: 10px 0;
+        }
+
+        .attr-row {
+            padding: 4px 16px 4px 8px;
+            display: flex;
+            align-items: center;
             
             .attr-key {
+                display: block;
                 font-size: 15px;
                 text-transform: uppercase;
-                margin-right: 10px;
                 color: $font-light;
-                
+                margin: 0 5px;
+
                 display: inline-block;
             }
-            .attr-value {
-                font-size: 17px;
-                display: inline-block;
-                padding: 7px 10px;
-                
-            }
+
             .attr-badge {
+                display: flex;
+                align-items: center;
+
                 background-color: $background;
                 border-radius: 20px;
                 border: 1px solid $border;
+
+                overflow: hidden;
+
+                font-size: 17px;
+                padding: 6px 12px;
+                margin-left: 10px;
                 
-                svg {
+                .attr-badge-icon {
                     top: -2px;
                     position: relative;
                     vertical-align: middle;
                     font-size: 20px;
                     margin-right: 5px;
+                    line-height: 0;
+                }
+
+                .attr-value {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .attr-value:hover {
+                    width: auto;
+                    white-space: normal;
                 }
             }
-            
         }
 
         .attr-header {
             border-bottom: 1px solid $border;
-            height: inherit;
-            padding: 7px 0;
-            .attr-value {
-                display: inline-block;
-                position: relative;
-                padding-left: 7px;
-                font-size: 17px;
-                top: -5px
+            padding: 4px 0;
+
+            .attr-name {
+                margin-left: 10px;
+
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
-            .check {
-                margin: 5px 10px;
+            .attr-name:hover {
+                width: auto;
+                white-space: normal;
+            }
+
+            .attr-check {
+                margin: 5px;
+                display: inline-block;
                 color: green;
                 font-size: 30px;
+                line-height: 0;
             }
         }
     }
