@@ -33,7 +33,7 @@ export const App = () => {
             .sort((record1, record2) => record1.name.localeCompare(record2.name))
             .map(r => ({
                 name: r.name, attributes: Object.entries(r.attributes)
-                    .sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, v])
+                    .sort(([a], [b]) => a.localeCompare(b))
             }));
     // Poll backend to check whether attributes have been received for current session
     useEffect(() => {
