@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AttrCard } from './AttrCard';
+import { AttrCard, OrderedGuestAttributes } from './AttrCard';
 import { NoAttrs } from './NoAttrs';
 import { PoweredBy } from './PoweredBy';
 
@@ -26,11 +26,15 @@ export const App = () => {
 
     const poll = (): Promise<SessionAttributes> => fetch(`${serverUrl}/session_info/${hostToken}`).then(r => r.json())
 
-    const [attrs, setAttrs] = useState<GuestAttributes[]>(null);
+    const [attrs, setAttrs] = useState<OrderedGuestAttributes[]>(null);
 
-    const prepareAttrs = (s: SessionAttributes): GuestAttributes[] => 
+    const prepareAttrs = (s: SessionAttributes): OrderedGuestAttributes[] =>
         Object.values(s)
-            .sort((record1, record2) => record1.name.localeCompare(record2.name));
+            .sort((record1, record2) => record1.name.localeCompare(record2.name))
+            .map(r => ({
+                name: r.name, attributes: Object.entries(r.attributes)
+                    .sort(([a], [b]) => a.localeCompare(b))
+            }));
     // Poll backend to check whether attributes have been received for current session
     useEffect(() => {
         poll().then(s => setAttrs(prepareAttrs(s)));

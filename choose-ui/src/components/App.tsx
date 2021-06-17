@@ -82,7 +82,7 @@ export default function App({ purpose, comm_display_name } : {purpose: string, c
           colored={inputData.comm}
         />
         <Instruction>
-          Om je veilig en snel te kunnen helpen vragen wij je om eerst in te loggen.
+          Om u veilig en snel te kunnen helpen vragen wij u om eerst in te loggen.
         </Instruction>
         <Actions>
           {state.methods.map((method) => (
