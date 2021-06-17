@@ -1,6 +1,7 @@
 import React from 'react';
 import DoneIcon from '@material-ui/icons/Done';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
+import translations from '../translations';
 
 type Attributes = [string, string];
 
@@ -20,7 +21,7 @@ export const AttrCard = ({ name, attributes }: OrderedGuestAttributes) => (
         <div className="attr-body">
         {Object.values(attributes).map(([key, value]) => (
             <div className="attr-row" key={key}>
-                <span className="attr-key">{key}:</span>
+                <span className="attr-key">{translations[key]||key}:</span>
                 <span className="attr-badge">
                     <span className="attr-badge-icon">
                         <VpnKeyIcon htmlColor="gray" fontSize="inherit"/>
