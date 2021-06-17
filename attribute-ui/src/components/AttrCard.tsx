@@ -1,6 +1,8 @@
 import React from 'react';
 import DoneIcon from '@material-ui/icons/Done';
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
+
+import translations from '../translations';
 interface Props {
     name: String,
     attributes: {
@@ -16,7 +18,7 @@ export const AttrCard = ({ name, attributes }: Props) => (
         </div>
         {Object.entries(attributes).map(([key, value]) => (
             <div className="attr" key={key}>
-                <span className="attr-key">{key}:</span>
+                <span className="attr-key">{translations[key]||key}:</span>
                 <span className="attr-value attr-badge"><VpnKeyIcon htmlColor="gray" fontSize="inherit"/>{value}</span>
             </div>
         ))}

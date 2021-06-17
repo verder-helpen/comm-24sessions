@@ -13,6 +13,8 @@ window.TRANSLATIONS = {
     request_permit: 'Vergunning aanvragen',
     request_passport: 'Paspoort aanvragen',
     // attribute keys
-    email: 'E-mailadres',
+    email: 'email',
+    fullname: 'naam',
+    city: 'woonplaats',
   }
 };
