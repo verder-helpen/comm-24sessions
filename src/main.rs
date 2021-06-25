@@ -36,7 +36,7 @@ async fn init(
         display_name: config.display_name().to_owned(),
     };
     let redirect_params = redirect_params.to_jws(config.widget_signer())?;
-    let uri = format!("{}?{}", config.widget_url(), redirect_params);
+    let uri = format!("{}{}", config.widget_url(), redirect_params);
 
     Ok(Redirect::to(uri))
 }

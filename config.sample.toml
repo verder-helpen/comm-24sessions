@@ -1,7 +1,7 @@
 [global]
 internal_url = "http://comm-24sessions:8000"
 external_url = "https://comm-24sessions.idcontact.test.tweede.golf"
-widget_url = "https://poc.idcontact.test.tweede.golf/auth-select/index.html"
+widget_url = "https://poc.idcontact.test.tweede.golf/auth-select/index.html?"
 core_url = "http://core:8000"
 
 display_name = "24Sessions"
