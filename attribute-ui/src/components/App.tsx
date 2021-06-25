@@ -46,12 +46,14 @@ export const App = () => {
 
     return (<>
         <div className="id-contact">
-            {attrsAvailable
-                ? attrs
-                    .map((record, i) => (
-                        record ? <AttrCard key={i} name={record.name} attributes={record.attributes} /> : <></>
-                    ))
-                : <NoAttrs />}
+            <div className="content">
+                {attrsAvailable
+                    ? attrs
+                        .map((record, i) => (
+                            record ? <AttrCard key={i} name={record.name} attributes={record.attributes} /> : <></>
+                        ))
+                    : <NoAttrs />}
+            </div>
             <PoweredBy />
         </div>
     </>)
