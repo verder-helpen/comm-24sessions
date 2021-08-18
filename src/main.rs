@@ -1,26 +1,8 @@
-use jwt::From24SessionsJwt;
+use id_contact_comm_common::prelude::*;
 use rocket::{fairing::AdHoc, get, launch, post, response::Redirect, routes, State};
-use rocket_contrib::{database, databases::postgres, json::Json};
-use types::{AuthResultSet, GuestAuthResult, GuestToken, HostToken};
+use rocket_contrib::json::Json;
 
-use crate::{
-    config::Config,
-    error::Error,
-    session::Session,
-    types::{StartRequest, WidgetRedirectParams},
-    util::random_string,
-};
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
-
-mod config;
-mod error;
-mod jwt;
-mod session;
-mod types;
-mod util;
-
-#[database("session")]
-pub struct SessionDBConn(postgres::Client);
 
 #[get("/init/<purpose>/<guest_token>")]
 async fn init(
@@ -28,15 +10,26 @@ async fn init(
     guest_token: String,
     config: &State<Config>,
 ) -> Result<Redirect, Error> {
-    let _ = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
+    let _ = GuestToken::from_platform_jwt(
+        &guest_token,
+        config.auth_during_comm_config().guest_validator(),
+    )?;
 
-    let redirect_params = WidgetRedirectParams {
+    let auth_select_params = AuthSelectParams {
         purpose,
         start_url: format!("{}/start/{}", config.external_url(), guest_token),
-        display_name: config.display_name().to_owned(),
+        display_name: config.auth_during_comm_config().display_name().to_owned(),
     };
-    let redirect_params = redirect_params.to_jws(config.widget_signer())?;
-    let uri = format!("{}{}", config.widget_url(), redirect_params);
+
+    let auth_select_params = sign_auth_select_params(
+        auth_select_params,
+        config.auth_during_comm_config().widget_signer(),
+    )?;
+    let uri = format!(
+        "{}{}",
+        config.auth_during_comm_config().widget_url(),
+        auth_select_params
+    );
 
     Ok(Redirect::to(uri))
 }
@@ -48,7 +41,10 @@ async fn start(
     config: &State<Config>,
     db: SessionDBConn,
 ) -> Result<Json<ClientUrlResponse>, Error> {
-    let guest_token = GuestToken::from_24sessions_jwt(&guest_token, config.guest_validator())?;
+    let guest_token = GuestToken::from_platform_jwt(
+        &guest_token,
+        config.auth_during_comm_config().guest_validator(),
+    )?;
     let StartRequest {
         purpose,
         auth_method,
@@ -70,7 +66,10 @@ async fn start(
 
     let client = reqwest::Client::new();
     let client_url_response = client
-        .post(format!("{}/start", config.core_url()))
+        .post(format!(
+            "{}/start",
+            config.auth_during_comm_config().core_url()
+        ))
         .json(&start_request)
         .send()
         .await?
@@ -102,7 +101,10 @@ async fn session_info(
     config: &State<Config>,
     db: SessionDBConn,
 ) -> Result<Json<AuthResultSet>, Error> {
-    let host_token = HostToken::from_24sessions_jwt(&host_token, config.host_validator())?;
+    let host_token = HostToken::from_platform_jwt(
+        &host_token,
+        config.auth_during_comm_config().host_validator(),
+    )?;
     let sessions = match Session::find_by_room_id(host_token.room_id, &db).await {
         Ok(s) => s,
         // Return empty object if no session was found
@@ -139,7 +141,7 @@ async fn session_info(
 
 #[get("/clean_db")]
 async fn clean_db(db: SessionDBConn) -> Result<(), Error> {
-    session::clean_db(&db).await
+    id_contact_comm_common::session::clean_db(&db).await
 }
 
 #[launch]
