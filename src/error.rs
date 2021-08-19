@@ -1,8 +1,8 @@
 use crate::jwt::JwtError;
 use rocket::{
     http::{ContentType, Status},
+    serde::json::json,
     Response,
-    serde::json::json
 };
 use thiserror::Error;
 
