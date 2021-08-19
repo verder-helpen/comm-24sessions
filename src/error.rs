@@ -1,9 +1,9 @@
 use crate::jwt::JwtError;
 use rocket::{
     http::{ContentType, Status},
+    serde::json::json,
     Response,
 };
-use rocket_contrib::json;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -13,7 +13,7 @@ pub enum Error {
     #[error("Bad Request: {0}")]
     BadRequest(&'static str),
     #[error("JWE Error: {0}")]
-    JWE(#[from] JwtError),
+    Jwe(#[from] JwtError),
     #[error("Postgres Error: {0}")]
     Postgres(#[from] postgres::Error),
     #[error("Reqwest Error: {0}")]
@@ -33,7 +33,7 @@ impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
                 json!({"error": "BadRequest", "detail": m}),
                 Status::BadRequest,
             ),
-            JWE(e) => (
+            Jwe(e) => (
                 json!({"error": "BadRequest", "detail": format!("{}", e)}),
                 Status::BadRequest,
             ),
@@ -48,6 +48,6 @@ impl<'r, 'o: 'r> rocket::response::Responder<'r, 'o> for Error {
 
 impl From<id_contact_jwt::Error> for Error {
     fn from(e: id_contact_jwt::Error) -> Self {
-        Error::JWE(JwtError::JWE(e))
+        Error::Jwe(JwtError::Jwe(e))
     }
 }

@@ -113,7 +113,7 @@ impl Session {
                     ",
                     &[&room_id],
                 )?;
-                if rows.len() == 0 {
+                if rows.is_empty() {
                     return Err(Error::NotFound);
                 }
                 rows.into_iter()
