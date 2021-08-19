@@ -1,6 +1,6 @@
 use jwt::From24SessionsJwt;
-use rocket::{fairing::AdHoc, get, launch, post, response::Redirect, routes, State};
-use rocket_contrib::{database, databases::postgres, json::Json};
+use rocket::{fairing::AdHoc, get, launch, post, response::Redirect, routes, State, serde::json::Json};
+use rocket_sync_db_pools::{database, postgres};
 use types::{AuthResultSet, GuestAuthResult, GuestToken, HostToken};
 
 use crate::{
