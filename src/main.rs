@@ -1,7 +1,7 @@
 use id_contact_comm_common::prelude::*;
-use rocket::{fairing::AdHoc, get, launch, post, response::Redirect, routes, State};
-use rocket_contrib::json::Json;
-
+use rocket::{
+    fairing::AdHoc, get, launch, post, response::Redirect, routes, serde::json::Json, State,
+};
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 
 #[get("/init/<purpose>/<guest_token>")]
