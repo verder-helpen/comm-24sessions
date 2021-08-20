@@ -618,12 +618,11 @@ dependencies = [
 [[package]]
 name = "id-contact-comm-common"
 version = "0.1.0"
-source = "git+https://github.com/id-contact/comm-common.git#002dd4754552d8ee68924269b37cf0b9bbfa6271"
+source = "git+https://github.com/id-contact/comm-common.git#c083e013ae18888b7dca549bf81d14568b34ca19"
 dependencies = [
  "id-contact-jwt",
  "id-contact-proto",
  "josekit",
- "postgres",
  "rand",
  "reqwest",
  "rocket",
