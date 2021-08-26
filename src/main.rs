@@ -1,7 +1,7 @@
 use id_contact_comm_common::prelude::*;
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 use rocket::{
-    fairing::AdHoc, get, launch, post, response::Redirect, routes, serde::json::Json, State,
+    get, launch, post, response::Redirect, routes, serde::json::Json, State,
 };
 
 #[get("/init/<purpose>/<guest_token>")]
@@ -146,11 +146,17 @@ async fn clean_db(db: SessionDBConn) -> Result<(), Error> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build()
+    let base = rocket::build()
         .mount(
             "/",
             routes![init, start, auth_result, session_info, clean_db,],
         )
-        .attach(SessionDBConn::fairing())
-        .attach(AdHoc::config::<Config>())
+        .attach(SessionDBConn::fairing());
+
+    let config = base.figment().extract::<Config>().unwrap_or_else(|_| {
+        // Drop error value, as it could contain secrets
+        panic!("Failure to parse configuration")
+    });
+
+    base.manage(config)
 }
