@@ -123,7 +123,6 @@ fn rocket() -> _ {
                 auth_result,
                 session_info,
                 clean_db,
-                credentials
             ],
         )
         .attach(SessionDBConn::fairing());
