@@ -1,8 +1,9 @@
-use id_contact_comm_common::prelude::*;
-use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
-use rocket::{
-    get, launch, post, response::Redirect, routes, serde::json::Json, State,
+use id_contact_comm_common::{
+    credentials::{get_credentials_for_host, CredentialRenderType, RenderedCredentials},
+    prelude::*,
 };
+use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
+use rocket::{get, launch, post, response::Redirect, routes, serde::json::Json, State};
 
 #[get("/init/<purpose>/<guest_token>")]
 async fn init(
@@ -30,7 +31,6 @@ async fn init(
         config.auth_during_comm_config().widget_url(),
         auth_select_params
     );
-
     Ok(Redirect::to(uri))
 }
 
@@ -100,9 +100,11 @@ async fn session_info(
     host_token: String,
     config: &State<Config>,
     db: SessionDBConn,
-) -> Result<Json<Vec<Credentials>>, Error> {
-    let credentials = id_contact_comm_common::credentials::get_credentials_for_host(host_token, config, db).await?;
-    Ok(Json(credentials))
+) -> Result<RenderedCredentials, Error> {
+    let credentials = get_credentials_for_host(host_token, config, db)
+        .await
+        .unwrap_or_else(|_| Vec::new());
+    render_credentials(credentials, CredentialRenderType::Json)
 }
 
 #[get("/clean_db")]
@@ -115,7 +117,13 @@ fn rocket() -> _ {
     let base = rocket::build()
         .mount(
             "/",
-            routes![init, start, auth_result, session_info, clean_db,],
+            routes![
+                init,
+                start,
+                auth_result,
+                session_info,
+                clean_db,
+            ],
         )
         .attach(SessionDBConn::fairing());
 
