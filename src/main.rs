@@ -70,6 +70,7 @@ async fn start(
             "{}/start",
             config.auth_during_comm_config().core_url()
         ))
+        .header(reqwest::header::ACCEPT, reqwest::header::HeaderValue::from_static("application/json"))
         .json(&start_request)
         .send()
         .await?
