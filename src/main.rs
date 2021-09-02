@@ -117,13 +117,7 @@ fn rocket() -> _ {
     let base = rocket::build()
         .mount(
             "/",
-            routes![
-                init,
-                start,
-                auth_result,
-                session_info,
-                clean_db,
-            ],
+            routes![init, start, auth_result, session_info, clean_db,],
         )
         .attach(SessionDBConn::fairing());
 
