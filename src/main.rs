@@ -100,43 +100,9 @@ async fn session_info(
     host_token: String,
     config: &State<Config>,
     db: SessionDBConn,
-) -> Result<Json<AuthResultSet>, Error> {
-    let host_token = HostToken::from_platform_jwt(
-        &host_token,
-        config.auth_during_comm_config().host_validator(),
-    )?;
-    let sessions = match Session::find_by_room_id(host_token.room_id, &db).await {
-        Ok(s) => s,
-        // Return empty object if no session was found
-        Err(Error::NotFound) => return Ok(Json(AuthResultSet::new())),
-        e => e?,
-    };
-
-    let auth_results: AuthResultSet = sessions
-        .into_iter()
-        .map(|s| {
-            (
-                s.guest_token.id,
-                GuestAuthResult {
-                    name: s.guest_token.name,
-                    attributes: s.auth_result
-                        .map(|r| {
-                                id_contact_jwt::dangerous_decrypt_auth_result_without_verifying_expiration(
-                                    &r,
-                                    config.validator(),
-                                    config.decrypter(),
-                            )
-                            .map(|r| r.attributes)
-                            .ok()
-                    })
-                    .flatten()
-                    .flatten()
-            },
-            )
-        })
-        .filter(|(_, g)| g.attributes.is_some())
-        .collect();
-    Ok(Json(auth_results))
+) -> Result<Json<Vec<Credentials>>, Error> {
+    let credentials = id_contact_comm_common::credentials::get_credentials_for_host(host_token, config, db).await?;
+    Ok(Json(credentials))
 }
 
 #[get("/clean_db")]
