@@ -71,6 +71,7 @@ async fn start(
     let client = reqwest::Client::new();
     let client_url_response = client
         .post(format!("{}/start", config.core_url()))
+        .header(reqwest::header::ACCEPT, reqwest::header::HeaderValue::from_static("application/json"))
         .json(&start_request)
         .send()
         .await?
