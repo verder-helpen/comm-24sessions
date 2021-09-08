@@ -64,14 +64,27 @@ async fn start(
         attr_url: Some(attr_url),
     };
 
+    let start_request = id_contact_comm_common::jwt::sign_start_auth_request(
+        start_request,
+        config.auth_during_comm_config().start_auth_key_id(),
+        config.auth_during_comm_config().start_auth_signer(),
+    )?;
+
     let client = reqwest::Client::new();
     let client_url_response = client
         .post(format!(
             "{}/start",
             config.auth_during_comm_config().core_url()
         ))
-        .header(reqwest::header::ACCEPT, reqwest::header::HeaderValue::from_static("application/json"))
-        .json(&start_request)
+        .header(
+            reqwest::header::ACCEPT,
+            reqwest::header::HeaderValue::from_static("application/json"),
+        )
+        .header(
+            reqwest::header::CONTENT_TYPE,
+            reqwest::header::HeaderValue::from_static("application/jwt"),
+        )
+        .body(start_request)
         .send()
         .await?
         .text()
