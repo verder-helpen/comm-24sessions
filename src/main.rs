@@ -128,7 +128,8 @@ async fn clean_db(db: SessionDBConn) -> Result<(), Error> {
 
 #[launch]
 fn rocket() -> _ {
-    let base = rocket::build()
+    id_contact_sentry::SentryLogger::init();
+    let mut base = rocket::build()
         .mount(
             "/",
             routes![init, start, auth_result, session_info, clean_db,],
@@ -139,6 +140,13 @@ fn rocket() -> _ {
         // Drop error value, as it could contain secrets
         panic!("Failure to parse configuration")
     });
+
+    if let Some(sentry_dsn) = config.sentry_dsn() {
+        base = base.attach(id_contact_sentry::SentryFairing::new(
+            sentry_dsn,
+            "comm-24sessions",
+        ));
+    }
 
     base.manage(config)
 }
