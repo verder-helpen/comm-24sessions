@@ -17,5 +17,5 @@ reqwest = {version = "0.11.3", features = ["json"]}
 
 [dependencies.id-contact-comm-common]
 git = "https://github.com/id-contact/comm-common.git"
-branch = "unify-sentry"
+rev = "63947c2"
 features = ["auth_during_comm", "session_db"]

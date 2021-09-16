@@ -812,7 +812,7 @@ dependencies = [
 [[package]]
 name = "id-contact-comm-common"
 version = "0.1.0"
-source = "git+https://github.com/id-contact/comm-common.git?branch=unify-sentry#5ba9485d8bc0b8dc0ec28f2964c6b9cef9c913b6"
+source = "git+https://github.com/id-contact/comm-common.git?rev=63947c2#63947c2e038ca065dfeeb0cc18a73ff0f06ee2c7"
 dependencies = [
  "id-contact-jwt",
  "id-contact-proto",
