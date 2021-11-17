@@ -5,13 +5,9 @@ use id_contact_comm_common::{
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 use rocket::{get, launch, post, response::Redirect, routes, serde::json::Json, State};
 
-#[get("/init/<purpose>/<guest_token>")]
-async fn init(
-    purpose: String,
-    guest_token: String,
-    config: &State<Config>,
-) -> Result<Redirect, Error> {
-    let _ = GuestToken::from_platform_jwt(
+#[get("/init/<guest_token>")]
+async fn init(guest_token: String, config: &State<Config>) -> Result<Redirect, Error> {
+    let GuestToken { purpose, .. } = GuestToken::from_platform_jwt(
         &guest_token,
         config.auth_during_comm_config().guest_validator(),
     )?;
@@ -49,16 +45,23 @@ async fn start(
         purpose,
         auth_method,
     } = serde_json::from_str(&start_request)?;
+
+    if purpose != guest_token.purpose {
+        return Err(Error::BadRequest(
+            "Purpose from start request does not match guest token purpose.",
+        ));
+    }
+
     let attr_id = random_string(64);
     let comm_url = guest_token.redirect_url.clone();
     let attr_url = format!("{}/auth_result/{}", config.internal_url(), attr_id);
 
-    let session = Session::new(guest_token, attr_id, purpose.clone());
+    let session = Session::new(guest_token, attr_id);
 
     session.persist(&db).await?;
 
     let start_request = StartRequestAuthOnly {
-        purpose,
+        purpose: session.guest_token.purpose,
         auth_method,
         comm_url,
         attr_url: Some(attr_url),
@@ -89,7 +92,7 @@ async fn start(
         .await?
         .text()
         .await?;
-
+    dbg!(&client_url_response);
     let client_url_response = serde_json::from_str::<ClientUrlResponse>(&client_url_response)?;
     Ok(Json(client_url_response))
 }
