@@ -9,7 +9,7 @@ use rocket::{get, launch, post, response::Redirect, routes, serde::json::Json, S
 async fn init(guest_token: String, config: &State<Config>) -> Result<Redirect, Error> {
     let GuestToken { purpose, .. } = GuestToken::from_platform_jwt(
         &guest_token,
-        config.auth_during_comm_config().guest_validator(),
+        config.auth_during_comm_config().guest_verifier(),
     )?;
 
     let auth_select_params = AuthSelectParams {
@@ -39,7 +39,7 @@ async fn start(
 ) -> Result<Json<ClientUrlResponse>, Error> {
     let guest_token = GuestToken::from_platform_jwt(
         &guest_token,
-        config.auth_during_comm_config().guest_validator(),
+        config.auth_during_comm_config().guest_verifier(),
     )?;
     let StartRequest {
         purpose,
@@ -106,7 +106,7 @@ async fn auth_result(
 ) -> Result<(), Error> {
     id_contact_jwt::decrypt_and_verify_auth_result(
         &auth_result,
-        config.validator(),
+        config.verifier(),
         config.decrypter(),
     )?;
     Session::register_auth_result(attr_id, auth_result, &db).await
