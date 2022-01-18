@@ -92,7 +92,7 @@ async fn start(
         .await?
         .text()
         .await?;
-    dbg!(&client_url_response);
+
     let client_url_response = serde_json::from_str::<ClientUrlResponse>(&client_url_response)?;
     Ok(Json(client_url_response))
 }
