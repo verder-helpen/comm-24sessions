@@ -3,12 +3,32 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ID Contact</title>
-    <link href="src/index.scss" rel="stylesheet" />
+    <title>Verder Helpen</title>
+    <script src="/config.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const hostToken = window.location.pathname.slice(1);
+        const noBody = 'Er zijn (nog) geen geïdentificeerde gasten.';
+        const rootElement = document.getElementById('root');
+
+        function poll() {
+          fetch(`${window.SERVER_URL}/session_info/${hostToken}`)
+            .then(r => r.text())
+            .then((html) => {
+              if (html) {
+                rootElement.innerHTML = html;
+              } else {
+                rootElement.innerText = noBody;
+              }
+            });
+        }
+
+        setInterval(poll, 5 * 1000);
+        poll();
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script src="config.js"></script>
-    <script src="src/index.tsx"></script>
   </body>
 </html>
