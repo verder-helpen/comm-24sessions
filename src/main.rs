@@ -121,7 +121,7 @@ async fn session_info(
     let credentials = get_credentials_for_host(host_token, config, db)
         .await
         .unwrap_or_else(|_| Vec::new());
-    render_credentials(credentials, CredentialRenderType::Json)
+    render_credentials(credentials, CredentialRenderType::Html)
 }
 
 #[get("/clean_db")]
