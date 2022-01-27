@@ -1,9 +1,7 @@
 use id_contact_comm_common::{
     auth::{check_token, TokenCookie},
     config::Config,
-    credentials::{
-        get_credentials_for_host, render_credentials, CredentialRenderType, RenderedCredentials,
-    },
+    credentials::{CredentialRenderType, get_credentials_for_host, RenderedCredentials, render_credentials},
     error::Error,
     jwt::sign_auth_select_params,
     session::{Session, SessionDBConn},
@@ -131,12 +129,12 @@ async fn session_info(
         let credentials = get_credentials_for_host(host_token, config, db)
             .await
             .unwrap_or_else(|_| Vec::new());
+
         return render_credentials(credentials, CredentialRenderType::Html);
     }
 
-    Err(Error::Forbidden(
-        "Insufficient rights, try logging in to another account",
-    ))
+    let logout_url = format!("{}/auth/logout", config.external_url());
+    Err(Error::Forbidden(logout_url))
 }
 
 #[allow(unused_variables)]
@@ -153,15 +151,13 @@ async fn logged_in(config: &State<Config>, token: TokenCookie) -> Result<String,
     }
 
     Err(Error::Forbidden(
-        "Insufficient rights, try logging in to another account",
+        "Insufficient rights, try logging in to another account".to_owned(),
     ))
 }
 
 #[get("/logged_in", rank = 2)]
 async fn logged_in_anon() -> Result<String, Error> {
-    Err(Error::InternalServer(
-        "Something went wrong, please close this window and try again.",
-    ))
+    Err(Error::InternalServer("Something went wrong, please close this window and try again.".to_owned()))
 }
 
 #[get("/clean_db")]
