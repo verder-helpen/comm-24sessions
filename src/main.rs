@@ -1,7 +1,9 @@
 use id_contact_comm_common::{
     auth::{check_token, TokenCookie},
     config::Config,
-    credentials::{CredentialRenderType, get_credentials_for_host, RenderedCredentials, render_credentials},
+    credentials::{
+        get_credentials_for_host, render_credentials, CredentialRenderType, RenderedCredentials,
+    },
     error::Error,
     jwt::sign_auth_select_params,
     session::{Session, SessionDBConn},
@@ -157,7 +159,9 @@ async fn logged_in(config: &State<Config>, token: TokenCookie) -> Result<String,
 
 #[get("/logged_in", rank = 2)]
 async fn logged_in_anon() -> Result<String, Error> {
-    Err(Error::InternalServer("Something went wrong, please close this window and try again."))
+    Err(Error::InternalServer(
+        "Something went wrong, please close this window and try again.",
+    ))
 }
 
 #[get("/clean_db")]
