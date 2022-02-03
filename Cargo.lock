@@ -991,7 +991,7 @@ dependencies = [
 [[package]]
 name = "id-contact-comm-common"
 version = "0.1.0"
-source = "git+https://github.com/id-contact/comm-common.git?rev=40c84a3355e6e779452cf5251a1c07e88f3909b8#40c84a3355e6e779452cf5251a1c07e88f3909b8"
+source = "git+https://github.com/id-contact/comm-common.git?rev=a6034a2063ea629c8d9634f412c015d7d0a3e4fc#a6034a2063ea629c8d9634f412c015d7d0a3e4fc"
 dependencies = [
  "id-contact-jwt",
  "id-contact-proto",
@@ -2458,19 +2458,20 @@ dependencies = [
 
 [[package]]
 name = "strum"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaf86bbcfd1fa9670b7a129f64fc0c9fcbbfe4f1bc4210e9e98fe71ffc12cde2"
+checksum = "cae14b91c7d11c9a851d3fbc80a963198998c2a64eec840477fa92d8ce9b70bb"
 
 [[package]]
 name = "strum_macros"
-version = "0.21.1"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d06aaeeee809dbc59eb4556183dd927df67db1540de5be8d3ec0b6636358a5ec"
+checksum = "5bb0dc7ee9c15cea6199cde9a127fa16a4c5819af85395457ad72d68edc85a38"
 dependencies = [
  "heck",
  "proc-macro2",
  "quote",
+ "rustversion",
  "syn",
 ]
 

@@ -1,12 +1,11 @@
 use id_contact_comm_common::{
-    auth::{check_token, TokenCookie},
+    auth::{check_token, render_login, render_unauthorized, TokenCookie},
     config::Config,
-    credentials::{
-        get_credentials_for_host, render_credentials, CredentialRenderType, RenderedCredentials,
-    },
+    credentials::{get_credentials_for_host, render_credentials},
     error::Error,
     jwt::sign_auth_select_params,
     session::{Session, SessionDBConn},
+    templates::{RenderType, RenderedContent},
     types::{AuthSelectParams, FromPlatformJwt, GuestToken, StartRequest},
     util::random_string,
 };
@@ -126,42 +125,25 @@ async fn session_info(
     config: &State<Config>,
     db: SessionDBConn,
     token: TokenCookie,
-) -> Result<RenderedCredentials, Error> {
+) -> Result<RenderedContent, Error> {
     if check_token(token, config).await? {
         let credentials = get_credentials_for_host(host_token, config, db)
             .await
             .unwrap_or_else(|_| Vec::new());
 
-        return render_credentials(credentials, CredentialRenderType::Html);
+        return render_credentials(credentials, RenderType::Html);
     }
 
-    let logout_url = format!("{}/auth/logout", config.external_url());
-    Err(Error::Forbidden(logout_url))
+    render_unauthorized(config, RenderType::Html)
 }
 
 #[allow(unused_variables)]
 #[get("/session_info/<host_token>", rank = 2)]
-async fn session_info_anon(host_token: String, config: &State<Config>) -> Result<(), Error> {
-    let login_url = format!("{}/auth/login?redirect=/logged_in", config.external_url());
-    Err(Error::Unauthorized(login_url))
-}
-
-#[get("/logged_in")]
-async fn logged_in(config: &State<Config>, token: TokenCookie) -> Result<String, Error> {
-    if check_token(token, config).await? {
-        return Ok("You can close this window".to_owned());
-    }
-
-    Err(Error::Forbidden(
-        "Insufficient rights, try logging in to another account".to_owned(),
-    ))
-}
-
-#[get("/logged_in", rank = 2)]
-async fn logged_in_anon() -> Result<String, Error> {
-    Err(Error::InternalServer(
-        "Something went wrong, please close this window and try again.".to_owned(),
-    ))
+async fn session_info_anon(
+    host_token: String,
+    config: &State<Config>,
+) -> Result<RenderedContent, Error> {
+    render_login(config, RenderType::Html)
 }
 
 #[get("/clean_db")]
@@ -181,8 +163,6 @@ fn rocket() -> _ {
                 auth_result,
                 session_info,
                 session_info_anon,
-                logged_in,
-                logged_in_anon,
                 clean_db,
             ],
         )
