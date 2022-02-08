@@ -1,6 +1,13 @@
 use id_contact_comm_common::{
-    credentials::{get_credentials_for_host, CredentialRenderType, RenderedCredentials},
-    prelude::*,
+    auth::{check_token, render_login, render_unauthorized, TokenCookie},
+    config::Config,
+    credentials::{get_credentials_for_host, render_credentials},
+    error::Error,
+    jwt::sign_auth_select_params,
+    session::{Session, SessionDBConn},
+    templates::{RenderType, RenderedContent},
+    types::{AuthSelectParams, FromPlatformJwt, GuestToken, StartRequest},
+    util::random_string,
 };
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 use rocket::{get, launch, post, response::Redirect, routes, serde::json::Json, State};
@@ -117,11 +124,26 @@ async fn session_info(
     host_token: String,
     config: &State<Config>,
     db: SessionDBConn,
-) -> Result<RenderedCredentials, Error> {
-    let credentials = get_credentials_for_host(host_token, config, db)
-        .await
-        .unwrap_or_else(|_| Vec::new());
-    render_credentials(credentials, CredentialRenderType::Html)
+    token: TokenCookie,
+) -> Result<RenderedContent, Error> {
+    if check_token(token, config).await? {
+        let credentials = get_credentials_for_host(host_token, config, db)
+            .await
+            .unwrap_or_else(|_| Vec::new());
+
+        return render_credentials(credentials, RenderType::Html);
+    }
+
+    render_unauthorized(config, RenderType::Html)
+}
+
+#[allow(unused_variables)]
+#[get("/session_info/<host_token>", rank = 2)]
+async fn session_info_anon(
+    host_token: String,
+    config: &State<Config>,
+) -> Result<RenderedContent, Error> {
+    render_login(config, RenderType::Html)
 }
 
 #[get("/clean_db")]
@@ -135,7 +157,14 @@ fn rocket() -> _ {
     let mut base = rocket::build()
         .mount(
             "/",
-            routes![init, start, auth_result, session_info, clean_db,],
+            routes![
+                init,
+                start,
+                auth_result,
+                session_info,
+                session_info_anon,
+                clean_db,
+            ],
         )
         .attach(SessionDBConn::fairing());
 
@@ -143,6 +172,11 @@ fn rocket() -> _ {
         // Drop error value, as it could contain secrets
         panic!("Failure to parse configuration")
     });
+
+    // attach Auth provider fairing
+    if let Some(auth_provider) = config.auth_provider() {
+        base = base.attach(auth_provider.fairing());
+    }
 
     if let Some(sentry_dsn) = config.sentry_dsn() {
         base = base.attach(id_contact_sentry::SentryFairing::new(

@@ -12,7 +12,9 @@
         const rootElement = document.getElementById('root');
 
         function poll() {
-          fetch(`${window.SERVER_URL}/session_info/${hostToken}`)
+          fetch(`${window.SERVER_URL}/session_info/${hostToken}`, {
+            credentials: 'include',
+          })
             .then(r => r.text())
             .then((html) => {
               if (html) {

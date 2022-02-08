@@ -1,4 +1,7 @@
 [global]
+## NOTE: Don't (!) use this key! Generate your own!
+secret_key = "2P7d9MsOAZWyPu8HZn2AyMvOeN9MhkFEb4C9IzkLvno="
+
 internal_url = "http://comm-24sessions:8000"
 external_url = "https://comm-24sessions.idcontact.test.tweede.golf"
 widget_url = "https://poc.idcontact.test.tweede.golf/auth-select/index.html?"
@@ -10,6 +13,22 @@ start_auth_key_id = "24sessions"
 
 guest_signature_secret= "9e4ed6fdc6f7b8fb78f500d3abf3a042412140703249e2fe5671ecdab7e694bb"
 host_signature_secret= "54f0a09305eaa1d3ffc3ccb6035e95871eecbfa964404332ffddad52d43bf7b1"
+
+auth_provider = "Google"
+
+[global.oauth.google]
+provider = "Google"
+client_id = "xxx.apps.googleusercontent.com"
+client_secret = "xxx" ## DON'T COMMIT THIS
+redirect_uri = "https://comm-24sessions.idcontact.test.tweede.golf/auth/redirect"
+
+
+[global.oauth.microsoft]
+provider = "Microsoft"
+client_id = "xxx"
+client_secret = "xxx" ## DON'T COMMIT THIS
+redirect_uri = "https://comm-24sessions.idcontact.test.tweede.golf/auth/redirect"
+
 
 [global.decryption_privkey]
 type = "RSA"
