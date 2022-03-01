@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Verder Helpen</title>
-    <script src="/config.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function() {
         const hostToken = window.location.pathname.slice(1);
@@ -12,7 +11,7 @@
         const rootElement = document.getElementById('root');
 
         function poll() {
-          fetch(`${window.SERVER_URL}/session_info/${hostToken}`, {
+          fetch(`/session_info/${hostToken}`, {
             credentials: 'include',
           })
             .then(r => r.text())

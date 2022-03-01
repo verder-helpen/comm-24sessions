@@ -10,6 +10,7 @@ use id_contact_comm_common::{
     util::random_string,
 };
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
+use rocket::response::content::Html;
 use rocket::{get, launch, post, response::Redirect, routes, serde::json::Json, State};
 
 #[get("/init/<guest_token>")]
@@ -151,6 +152,11 @@ async fn clean_db(db: SessionDBConn) -> Result<(), Error> {
     id_contact_comm_common::session::clean_db(&db).await
 }
 
+#[get("/<_token>")]
+async fn attribute_ui(_token: String) -> Html<&'static str> {
+    Html(include_str!("../attribute-ui/index.html"))
+}
+
 #[launch]
 fn rocket() -> _ {
     id_contact_sentry::SentryLogger::init();
@@ -164,6 +170,7 @@ fn rocket() -> _ {
                 session_info,
                 session_info_anon,
                 clean_db,
+                attribute_ui,
             ],
         )
         .attach(SessionDBConn::fairing());
