@@ -4,14 +4,14 @@ use id_contact_comm_common::{
     credentials::{get_credentials_for_host, render_credentials},
     error::Error,
     jwt::sign_auth_select_params,
-    session::{Session, SessionDBConn},
+    session::{periodic_cleanup, Session, SessionDBConn},
     templates::{RenderType, RenderedContent},
     types::{AuthSelectParams, FromPlatformJwt, GuestToken, StartRequest},
     util::random_string,
 };
 use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
 use rocket::response::content::Html;
-use rocket::{get, launch, post, response::Redirect, routes, serde::json::Json, State};
+use rocket::{get, post, response::Redirect, routes, serde::json::Json, State};
 
 #[get("/init/<guest_token>")]
 async fn init(guest_token: String, config: &State<Config>) -> Result<Redirect, Error> {
@@ -157,8 +157,8 @@ async fn attribute_ui(_token: String) -> Html<&'static str> {
     Html(include_str!("../attribute-ui/index.html"))
 }
 
-#[launch]
-fn rocket() -> _ {
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
     id_contact_sentry::SentryLogger::init();
     let mut base = rocket::build()
         .mount(
@@ -192,5 +192,20 @@ fn rocket() -> _ {
         ));
     }
 
-    base.manage(config)
+    let base = base
+        .manage(config)
+        .ignite()
+        .await
+        .expect("Failed to ignite");
+
+    let connection = SessionDBConn::get_one(&base)
+        .await
+        .expect("Failed to fetch database connection for periodic cleanup");
+    rocket::tokio::spawn(async move {
+        periodic_cleanup(&connection, None)
+            .await
+            .expect("Failed cleanup");
+    });
+
+    base.launch().await
 }
