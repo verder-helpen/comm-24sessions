@@ -10,21 +10,55 @@
         const noBody = 'Er zijn (nog) geen geïdentificeerde gasten.';
         const rootElement = document.getElementById('root');
 
-        function poll() {
-          fetch(`/session_info/${hostToken}`, {
-            credentials: 'include',
-          })
-            .then(r => r.text())
-            .then((html) => {
-              if (html) {
-                rootElement.innerHTML = html;
-              } else {
+        function fetchAndRender() {
+          return fetch(`/session_info/${hostToken}`, {
+              credentials: 'include',
+            })
+            .then((r) => {
+              if (r.status === 200 || r.status === 401) {
+                r.text().then((html) => {
+                  rootElement.innerHTML = html;
+                });
+              } else if (r.status === 404) {
                 rootElement.innerText = noBody;
               }
+
+              return r.status;
             });
         }
 
-        setInterval(poll, 5 * 1000);
+        function listenForEvents() {
+          const source = new EventSource(`/live/session_info/${hostToken}`, { withCredentials: true });
+
+          source.onmessage = (event) => {
+            if (event.data) {
+              fetchAndRender();
+            }
+          };
+
+          source.onerror = () => {
+            source.close();
+            setTimeout(listenForEvents, 5 * 1000);
+          };
+        }
+
+        function poll() {
+          if (!document.hidden) {
+            fetchAndRender().then((status) => {
+              if (status === 401) {
+                // keep polling until user is logged in
+                setTimeout(poll, 5 * 1000);
+              } else {
+                // start listinging for server updates
+                listenForEvents();
+              }
+            });
+          } else {
+            setTimeout(poll, 5 * 1000);
+          }
+        }
+
+        // poll until user is logged in
         poll();
       });
     </script>
