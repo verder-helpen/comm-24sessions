@@ -11,11 +11,11 @@ id-contact-sentry = { git = "https://github.com/id-contact/id-contact-sentry.git
 id-contact-jwt = { git = "https://github.com/id-contact/id-contact-jwt.git" }
 id-contact-proto = { git = "https://github.com/id-contact/id-contact-proto.git" }
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
-serde = "1.0.133"
-serde_json = "1.0.74"
-reqwest = { version = "0.11.8", features = ["json"] }
+serde = "1.0.136"
+serde_json = "1.0.79"
+reqwest = { version = "0.11.10", features = ["json"] }
 
 [dependencies.id-contact-comm-common]
 git = "https://github.com/id-contact/comm-common.git"
-rev = "cc86e33dfc71e5de38e6f032016d1806b564274a"
+rev = "d74b798bdfe2d7b90f7271c9ef2b6fd83b7207ad"
 features = ["auth_during_comm", "session_db"]
