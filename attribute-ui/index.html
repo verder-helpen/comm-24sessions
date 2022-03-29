@@ -7,7 +7,6 @@
     <script>
       document.addEventListener("DOMContentLoaded", function() {
         const hostToken = window.location.pathname.slice(1);
-        const noBody = 'Er zijn (nog) geen geïdentificeerde gasten.';
         const rootElement = document.getElementById('root');
 
         function fetchAndRender() {
@@ -15,12 +14,10 @@
               credentials: 'include',
             })
             .then((r) => {
-              if (r.status === 200 || r.status === 401) {
+              if (r.status === 200 || r.status === 401 || r.status === 404) {
                 r.text().then((html) => {
                   rootElement.innerHTML = html;
                 });
-              } else if (r.status === 404) {
-                rootElement.innerText = noBody;
               }
 
               return r.status;

@@ -17,5 +17,5 @@ reqwest = { version = "0.11.10", features = ["json"] }
 
 [dependencies.id-contact-comm-common]
 git = "https://github.com/id-contact/comm-common.git"
-rev = "d74b798bdfe2d7b90f7271c9ef2b6fd83b7207ad"
+rev = "e6b0ac6203360228286e0aea63772e7d52141595"
 features = ["auth_during_comm", "session_db"]
