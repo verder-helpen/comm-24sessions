@@ -1003,7 +1003,7 @@ dependencies = [
 [[package]]
 name = "id-contact-comm-common"
 version = "0.1.0"
-source = "git+https://github.com/id-contact/comm-common.git?rev=ab67134fc386d4632ec19487aefd595d3273f18f#ab67134fc386d4632ec19487aefd595d3273f18f"
+source = "git+https://github.com/id-contact/comm-common.git?rev=742d7656ea1ffc56b4043f14c75d93db35b754e1#742d7656ea1ffc56b4043f14c75d93db35b754e1"
 dependencies = [
  "accept-language",
  "id-contact-jwt",

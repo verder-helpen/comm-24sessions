@@ -1,5 +1,5 @@
 use id_contact_comm_common::{
-    auth::{check_token, render_login, render_not_found, render_unauthorized, TokenCookie},
+    auth::{render_login, render_not_found, render_unauthorized, TokenCookie},
     config::Config,
     credentials::{get_credentials_for_host, render_credentials},
     error::Error,
@@ -149,10 +149,13 @@ async fn live_session_info(
 ) -> EventStream![] {
     let mut rx = queue.subscribe();
 
-    // check user is logged in
-    let authorized = match check_token(token, config).await {
-        Ok(r) => r,
-        _ => false,
+    // check if the user is logged in
+    let authorised = match config.auth_provider() {
+        Some(auth_provider) => match auth_provider.check_token(token).await {
+            Ok(r) => r,
+            Err(_) => false,
+        },
+        None => true,
     };
 
     let host_token = HostToken::from_platform_jwt(
@@ -162,7 +165,7 @@ async fn live_session_info(
     .unwrap();
 
     EventStream! {
-        if authorized  {
+        if authorised  {
             yield Event::data("start");
 
             loop {
@@ -204,7 +207,16 @@ async fn session_info(
     token: TokenCookie,
     translations: Translations,
 ) -> Result<status::Custom<RenderedContent>, Error> {
-    if check_token(token, config).await? {
+    // check if the user is logged in
+    let authorised = match config.auth_provider() {
+        Some(auth_provider) => match auth_provider.check_token(token).await {
+            Ok(r) => r,
+            Err(_) => false,
+        },
+        None => true,
+    };
+
+    if authorised {
         let credentials = get_credentials_for_host(host_token, config, &db)
             .await
             .unwrap_or_else(|_| Vec::new());
