@@ -151,10 +151,7 @@ async fn live_session_info(
 
     // check if the user is logged in
     let authorised = match config.auth_provider() {
-        Some(auth_provider) => match auth_provider.check_token(token).await {
-            Ok(r) => r,
-            Err(_) => false,
-        },
+        Some(auth_provider) => (auth_provider.check_token(token).await).unwrap_or(false),
         None => true,
     };
 
@@ -209,10 +206,7 @@ async fn session_info(
 ) -> Result<status::Custom<RenderedContent>, Error> {
     // check if the user is logged in
     let authorised = match config.auth_provider() {
-        Some(auth_provider) => match auth_provider.check_token(token).await {
-            Ok(r) => r,
-            Err(_) => false,
-        },
+        Some(auth_provider) => (auth_provider.check_token(token).await).unwrap_or(false),
         None => true,
     };
 
