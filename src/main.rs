@@ -1,5 +1,5 @@
 use id_contact_comm_common::{
-    auth::{render_login, render_not_found, render_unauthorized, TokenCookie},
+    auth::{render_not_found, render_login, Authorized},
     config::Config,
     credentials::{get_credentials_for_host, render_credentials},
     error::Error,
@@ -145,15 +145,9 @@ async fn live_session_info(
     host_token: String,
     config: &State<Config>,
     db: SessionDBConn,
-    token: TokenCookie,
+    authorized: Authorized,
 ) -> EventStream![] {
     let mut rx = queue.subscribe();
-
-    // check if the user is logged in
-    let authorised = match config.auth_provider() {
-        Some(auth_provider) => (auth_provider.check_token(token).await).unwrap_or(false),
-        None => true,
-    };
 
     let host_token = HostToken::from_platform_jwt(
         &host_token,
@@ -162,7 +156,7 @@ async fn live_session_info(
     .unwrap();
 
     EventStream! {
-        if authorised  {
+        if authorized.into() {
             yield Event::data("start");
 
             loop {
@@ -201,16 +195,10 @@ async fn session_info(
     host_token: String,
     config: &State<Config>,
     db: SessionDBConn,
-    token: TokenCookie,
+    authorized: Authorized,
     translations: Translations,
 ) -> Result<status::Custom<RenderedContent>, Error> {
-    // check if the user is logged in
-    let authorised = match config.auth_provider() {
-        Some(auth_provider) => (auth_provider.check_token(token).await).unwrap_or(false),
-        None => true,
-    };
-
-    if authorised {
+    if authorized.into() {
         let credentials = get_credentials_for_host(host_token, config, &db)
             .await
             .unwrap_or_else(|_| Vec::new());
@@ -229,21 +217,6 @@ async fn session_info(
         ));
     }
 
-    // return 401 when the user has no valid token
-    Ok(status::Custom(
-        Status::Unauthorized,
-        render_unauthorized(config, RenderType::Html, translations)?,
-    ))
-}
-
-#[allow(unused_variables)]
-#[get("/session_info/<host_token>", rank = 2)]
-async fn session_info_anon(
-    host_token: String,
-    config: &State<Config>,
-    translations: Translations,
-) -> Result<status::Custom<RenderedContent>, Error> {
-    // return 401 when the user is not logged in
     Ok(status::Custom(
         Status::Unauthorized,
         render_login(config, RenderType::Html, translations)?,
@@ -273,7 +246,6 @@ async fn main() -> Result<(), rocket::Error> {
                 auth_result,
                 live_session_info,
                 session_info,
-                session_info_anon,
                 clean_db,
                 attribute_ui,
             ],
