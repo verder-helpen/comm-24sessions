@@ -1,5 +1,5 @@
 use id_contact_comm_common::{
-    auth::{render_not_found, render_login, Authorized},
+    auth::{render_login, render_not_found, Authorized},
     config::Config,
     credentials::{get_credentials_for_host, render_credentials},
     error::Error,
