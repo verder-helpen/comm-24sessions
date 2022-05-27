@@ -1,4 +1,11 @@
-use id_contact_comm_common::{
+use rocket::http::Status;
+use rocket::response::stream::{Event, EventStream};
+use rocket::response::{content::RawHtml, status};
+use rocket::serde::{Deserialize, Serialize};
+use rocket::tokio::select;
+use rocket::tokio::sync::broadcast::{channel, error::RecvError, Sender};
+use rocket::{get, post, response::Redirect, routes, serde::json::Json, Shutdown, State};
+use verder_helpen_comm_common::{
     auth::{render_login, render_not_found, Authorized},
     config::Config,
     credentials::{get_credentials_for_host, render_credentials},
@@ -10,14 +17,7 @@ use id_contact_comm_common::{
     types::{AuthSelectParams, FromPlatformJwt, GuestToken, HostToken, StartRequest},
     util::random_string,
 };
-use id_contact_proto::{ClientUrlResponse, StartRequestAuthOnly};
-use rocket::http::Status;
-use rocket::response::stream::{Event, EventStream};
-use rocket::response::{content::Html, status};
-use rocket::serde::{Deserialize, Serialize};
-use rocket::tokio::select;
-use rocket::tokio::sync::broadcast::{channel, error::RecvError, Sender};
-use rocket::{get, post, response::Redirect, routes, serde::json::Json, Shutdown, State};
+use verder_helpen_proto::{ClientUrlResponse, StartRequestAuthOnly};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -87,7 +87,7 @@ async fn start(
         attr_url: Some(attr_url),
     };
 
-    let start_request = id_contact_comm_common::jwt::sign_start_auth_request(
+    let start_request = verder_helpen_comm_common::jwt::sign_start_auth_request(
         start_request,
         config.auth_during_comm_config().start_auth_key_id(),
         config.auth_during_comm_config().start_auth_signer(),
@@ -125,7 +125,7 @@ async fn auth_result(
     db: SessionDBConn,
     queue: &State<Sender<AttributesReceivedEvent>>,
 ) -> Result<(), Error> {
-    id_contact_jwt::decrypt_and_verify_auth_result(
+    verder_helpen_jwt::decrypt_and_verify_auth_result(
         &auth_result,
         config.verifier(),
         config.decrypter(),
@@ -225,17 +225,17 @@ async fn session_info(
 
 #[get("/clean_db")]
 async fn clean_db(db: SessionDBConn) -> Result<(), Error> {
-    id_contact_comm_common::session::clean_db(&db).await
+    verder_helpen_comm_common::session::clean_db(&db).await
 }
 
 #[get("/<_token>")]
-async fn attribute_ui(_token: String) -> Html<&'static str> {
-    Html(include_str!("../attribute-ui/index.html"))
+async fn attribute_ui(_token: String) -> RawHtml<&'static str> {
+    RawHtml(include_str!("../attribute-ui/index.html"))
 }
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
-    id_contact_sentry::SentryLogger::init();
+    verder_helpen_sentry::SentryLogger::init();
     let mut base = rocket::build()
         .manage(channel::<AttributesReceivedEvent>(1024).0)
         .mount(
@@ -263,7 +263,7 @@ async fn main() -> Result<(), rocket::Error> {
     }
 
     if let Some(sentry_dsn) = config.sentry_dsn() {
-        base = base.attach(id_contact_sentry::SentryFairing::new(
+        base = base.attach(verder_helpen_sentry::SentryFairing::new(
             sentry_dsn,
             "comm-24sessions",
         ));
@@ -284,5 +284,7 @@ async fn main() -> Result<(), rocket::Error> {
             .expect("Failed cleanup");
     });
 
-    base.launch().await
+    // manually ignoring `unused_must_use` for Rocket version 0.5.0-rc.2
+    let _ = base.launch().await?;
+    Ok(())
 }
