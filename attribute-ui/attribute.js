@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
           // keep polling until user is logged in
           setTimeout(poll, 5 * 1000);
         } else {
-          // start listinging for server updates
+          // start listening for server updates
           listenForEvents();
         }
       });
