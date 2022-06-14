@@ -1,4 +1,5 @@
 use rocket::http::Status;
+use rocket::response::content::{RawCss, RawJavaScript};
 use rocket::response::stream::{Event, EventStream};
 use rocket::response::{content::RawHtml, status};
 use rocket::serde::{Deserialize, Serialize};
@@ -233,6 +234,16 @@ async fn attribute_ui(_token: String) -> RawHtml<&'static str> {
     RawHtml(include_str!("../attribute-ui/index.html"))
 }
 
+#[get("/attribute.js")]
+async fn attribute_js() -> RawJavaScript<&'static str> {
+    RawJavaScript(include_str!("../attribute-ui/attribute.js"))
+}
+
+#[get("/attribute.css")]
+async fn attribute_css() -> RawCss<&'static str> {
+    RawCss(include_str!("../attribute-ui/attribute.css"))
+}
+
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     verder_helpen_sentry::SentryLogger::init();
@@ -248,6 +259,8 @@ async fn main() -> Result<(), rocket::Error> {
                 session_info,
                 clean_db,
                 attribute_ui,
+                attribute_js,
+                attribute_css,
             ],
         )
         .attach(SessionDBConn::fairing());
