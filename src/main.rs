@@ -254,15 +254,13 @@ async fn main() -> Result<(), rocket::Error> {
     verder_helpen_sentry::SentryLogger::init();
     let mut base = rocket::build()
         .manage(channel::<AttributesReceivedEvent>(1024).0)
+        .mount("/internal", routes![auth_result, clean_db,])
+        .mount("/guest", routes![init, start,])
         .mount(
-            "/",
+            "/host",
             routes![
-                init,
-                start,
-                auth_result,
                 live_session_info,
                 session_info,
-                clean_db,
                 attribute_ui,
                 attribute_js,
                 attribute_css,
