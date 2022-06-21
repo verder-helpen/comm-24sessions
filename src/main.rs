@@ -28,7 +28,11 @@ struct AttributesReceivedEvent {
 
 #[get("/init/<guest_token>")]
 async fn init(guest_token: String, config: &State<Config>) -> Result<Redirect, Error> {
-    let GuestToken { purpose, .. } = GuestToken::from_platform_jwt(
+    let GuestToken {
+        purpose,
+        redirect_url,
+        ..
+    } = GuestToken::from_platform_jwt(
         &guest_token,
         config.auth_during_comm_config().guest_verifier(),
     )?;
@@ -36,6 +40,7 @@ async fn init(guest_token: String, config: &State<Config>) -> Result<Redirect, E
     let auth_select_params = AuthSelectParams {
         purpose,
         start_url: format!("{}/start/{}", config.external_url(), guest_token),
+        cancel_url: redirect_url,
         display_name: config.auth_during_comm_config().display_name().to_owned(),
     };
 

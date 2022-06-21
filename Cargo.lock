@@ -2774,7 +2774,7 @@ dependencies = [
 [[package]]
 name = "verder-helpen-comm-common"
 version = "0.1.0"
-source = "git+https://github.com/verder-helpen/comm-common.git?rev=694e0e37d8491701b923d579409dcf7025bbcf76#694e0e37d8491701b923d579409dcf7025bbcf76"
+source = "git+https://github.com/verder-helpen/comm-common.git?rev=f3875d8b92af98a870dd75416563518ab77cc3e7#f3875d8b92af98a870dd75416563518ab77cc3e7"
 dependencies = [
  "accept-language",
  "josekit",
