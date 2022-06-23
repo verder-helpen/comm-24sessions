@@ -3,7 +3,8 @@
 secret_key = "2P7d9MsOAZWyPu8HZn2AyMvOeN9MhkFEb4C9IzkLvno="
 
 internal_url = "http://comm-24sessions:8000/internal"
-external_url = "https://comm-24sessions.verderhelpen.test.tweede.golf/guest"
+external_guest_url = "https://comm-24sessions.verderhelpen.test.tweede.golf/guest"
+external_host_url = "https://comm-24sessions.verderhelpen.test.tweede.golf/host"
 widget_url = "https://widget.verderhelpen.test.tweede.golf/start-auth/"
 core_url = "http://core:8000"
 default_locale = "en"

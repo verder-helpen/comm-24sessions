@@ -39,7 +39,7 @@ async fn init(guest_token: String, config: &State<Config>) -> Result<Redirect, E
 
     let auth_select_params = AuthSelectParams {
         purpose,
-        start_url: format!("{}/start/{}", config.external_url(), guest_token),
+        start_url: format!("{}/start/{}", config.external_guest_url(), guest_token),
         cancel_url: redirect_url,
         display_name: config.auth_during_comm_config().display_name().to_owned(),
     };
