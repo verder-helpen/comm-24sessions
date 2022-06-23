@@ -2,9 +2,9 @@
 ## NOTE: Don't (!) use this key! Generate your own!
 secret_key = "2P7d9MsOAZWyPu8HZn2AyMvOeN9MhkFEb4C9IzkLvno="
 
-internal_url = "http://comm-24sessions:8000"
-external_url = "https://comm-24sessions.verderhelpen.test.tweede.golf"
-widget_url = "https://poc.verderhelpen.test.tweede.golf/auth-select/index.html?"
+internal_url = "http://comm-24sessions:8000/internal"
+external_url = "https://comm-24sessions.verderhelpen.test.tweede.golf/guest"
+widget_url = "https://widget.verderhelpen.test.tweede.golf/start-auth/"
 core_url = "http://core:8000"
 default_locale = "en"
 display_name = "Videobellen"
@@ -20,14 +20,14 @@ auth_provider = "Google"
 provider = "Google"
 client_id = "xxx.apps.googleusercontent.com"
 client_secret = "xxx" ## DON'T COMMIT THIS
-redirect_uri = "https://comm-24sessions.verderhelpen.test.tweede.golf/auth/redirect"
+redirect_uri = "https://comm-24sessions.verderhelpen.test.tweede.golf/host/auth/redirect"
 
 
 [global.oauth.microsoft]
 provider = "Microsoft"
 client_id = "xxx"
 client_secret = "xxx" ## DON'T COMMIT THIS
-redirect_uri = "https://comm-24sessions.verderhelpen.test.tweede.golf/auth/redirect"
+redirect_uri = "https://comm-24sessions.verderhelpen.test.tweede.golf/host/auth/redirect"
 
 
 [global.decryption_privkey]
