@@ -253,12 +253,7 @@ async fn main() -> Result<(), rocket::Error> {
         .mount("/guest", routes![init, start,])
         .mount(
             "/host",
-            routes![
-                live_session_info,
-                session_info,
-                attribute_ui,
-                attribute_js,
-            ],
+            routes![live_session_info, session_info, attribute_ui, attribute_js,],
         )
         .attach(SessionDBConn::fairing());
 
