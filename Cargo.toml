@@ -16,5 +16,5 @@ reqwest = { version = "0.11.11", features = ["json"] }
 
 [dependencies.verder-helpen-comm-common]
 git = "https://github.com/verder-helpen/comm-common.git"
-rev = "5d878399107411337dd271f7f34767fba4100449"
+rev = "950f4136a250c4a8cc40d381d9b42f0a54192228"
 features = ["auth_during_comm", "session_db"]
