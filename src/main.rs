@@ -81,13 +81,15 @@ async fn start(
     let attr_id = random_string(64);
     let comm_url = guest_token.redirect_url.clone();
     let attr_url = format!("{}/auth_result/{}", config.internal_url(), attr_id);
+    let purpose = guest_token.purpose.clone();
+    if !Session::restart_auth(guest_token.clone(), attr_id.clone(), &db).await? {
+        let session = Session::new(guest_token, attr_id);
 
-    let session = Session::new(guest_token, attr_id);
-
-    session.persist(&db).await?;
+        session.persist(&db).await?;
+    }
 
     let start_request = StartRequestAuthOnly {
-        purpose: session.guest_token.purpose,
+        purpose,
         auth_method,
         comm_url,
         attr_url: Some(attr_url),
