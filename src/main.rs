@@ -152,6 +152,7 @@ async fn live_session_info(
     mut end: Shutdown,
     host_token: String,
     config: &State<Config>,
+    sse_config: &State<SseConfig>,
     db: SessionDBConn,
     authorized: Authorized,
 ) -> EventStream![] {
@@ -163,9 +164,14 @@ async fn live_session_info(
     )
     .unwrap();
 
+    let timeout = sse_config.sse_timeout;
+
     EventStream! {
         if authorized.into() {
             yield Event::data("start");
+
+            let sleeper = rocket::tokio::time::sleep(timeout);
+            rocket::tokio::pin!(sleeper);
 
             loop {
                 select! {
@@ -189,12 +195,13 @@ async fn live_session_info(
                         Err(RecvError::Closed) => break,
                         Err(RecvError::Lagged(_)) => continue,
                     },
+                    _ = &mut sleeper => break,
                     _ = &mut end => break,
                 };
             }
+        } else {
+            yield Event::data("forbidden");
         }
-
-        yield Event::data("forbidden");
     }
 }
 
@@ -246,6 +253,11 @@ async fn attribute_js() -> RawJavaScript<&'static str> {
     RawJavaScript(include_str!("../attribute-ui/attribute.js"))
 }
 
+#[derive(Debug, Deserialize)]
+struct SseConfig {
+    sse_timeout: std::time::Duration,
+}
+
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     verder_helpen_sentry::SentryLogger::init();
@@ -264,6 +276,11 @@ async fn main() -> Result<(), rocket::Error> {
         panic!("Failure to parse configuration")
     });
 
+    let sse_config = base.figment().extract::<SseConfig>().unwrap_or_else(|_| {
+        // Drop error value, as it could contain secrets
+        panic!("Failure to parse configuration")
+    });
+
     // attach Auth provider fairing
     if let Some(auth_provider) = config.auth_provider() {
         base = base.attach(auth_provider.fairing());
@@ -278,6 +295,7 @@ async fn main() -> Result<(), rocket::Error> {
 
     let base = base
         .manage(config)
+        .manage(sse_config)
         .ignite()
         .await
         .expect("Failed to ignite");
