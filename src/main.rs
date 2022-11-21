@@ -260,6 +260,7 @@ struct SseConfig {
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
+    #[cfg(feature = "sentry")]
     verder_helpen_sentry::SentryLogger::init();
     let mut base = rocket::build()
         .manage(channel::<AttributesReceivedEvent>(1024).0)
@@ -286,9 +287,10 @@ async fn main() -> Result<(), rocket::Error> {
         base = base.attach(auth_provider.fairing());
     }
 
-    if let Some(sentry_dsn) = config.sentry_dsn() {
+    #[cfg(feature = "sentry")]
+    if let Some(dsn) = config.sentry_dsn() {
         base = base.attach(verder_helpen_sentry::SentryFairing::new(
-            sentry_dsn,
+            dsn,
             "comm-24sessions",
         ));
     }
