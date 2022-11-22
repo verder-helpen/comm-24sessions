@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function() {
           r.text().then((html) => {
             rootElement.innerHTML = html;
           });
+        } else if (r.status >= 500) {
+          rootElement.innerText = "Something went wrong.";
         }
 
         return r.status;
@@ -28,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     source.onerror = () => {
       source.close();
+      fetchAndRender();
       setTimeout(listenForEvents, 5 * 1000);
     };
   }
