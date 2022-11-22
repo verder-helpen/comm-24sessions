@@ -17,15 +17,12 @@ host_signature_secret= "54f0a09305eaa1d3ffc3ccb6035e95871eecbfa964404332ffddad52
 
 auth_provider = "Google"
 
-[global.sse_timeout]
-secs = 55
-nanos = 0
-
 [global.oauth.google]
 provider = "Google"
 client_id = "xxx.apps.googleusercontent.com"
 client_secret = "xxx" ## DON'T COMMIT THIS
 redirect_uri = "https://comm-24sessions.verderhelpen.test.tweede.golf/host/auth/redirect"
+
 
 [global.oauth.microsoft]
 provider = "Microsoft"
