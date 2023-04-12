@@ -1,13 +1,23 @@
 use std::convert::Infallible;
 
-use rocket::http::Status;
-use rocket::response::content::RawJavaScript;
-use rocket::response::stream::{Event, EventStream};
-use rocket::response::{content::RawHtml, status};
-use rocket::serde::{Deserialize, Serialize};
-use rocket::tokio::select;
-use rocket::tokio::sync::broadcast::{channel, error::RecvError, Sender};
-use rocket::{get, post, response::Redirect, routes, serde::json::Json, Shutdown, State};
+use rocket::{
+    get,
+    http::Status,
+    post,
+    response::{
+        content::{RawHtml, RawJavaScript},
+        status,
+        stream::{Event, EventStream},
+        Redirect,
+    },
+    routes,
+    serde::{json::Json, Deserialize, Serialize},
+    tokio::{
+        select,
+        sync::broadcast::{channel, error::RecvError, Sender},
+    },
+    Shutdown, State,
+};
 use verder_helpen_comm_common::{
     auth::{render_login, render_not_found, Authorized},
     config::Config,
