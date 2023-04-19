@@ -1,5 +1,6 @@
 name: Build, run tests and lint
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
