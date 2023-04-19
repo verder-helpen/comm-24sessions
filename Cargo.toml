@@ -9,10 +9,10 @@ edition = "2018"
 verder-helpen-sentry = { git = "https://github.com/verder-helpen/verder-helpen-sentry.git", optional = true }
 verder-helpen-jwt = { git = "https://github.com/verder-helpen/verder-helpen-jwt.git" }
 verder-helpen-proto = { git = "https://github.com/verder-helpen/verder-helpen-proto.git" }
-rocket = { version = "0.5.0-rc.2", features = ["json"] }
-serde = "1.0.152"
-serde_json = "1.0.93"
-reqwest = { version = "0.11.14", features = ["json"] }
+rocket = { version = "0.5.0-rc.3", features = ["json"] }
+serde = "1.0.160"
+serde_json = "1.0.96"
+reqwest = { version = "0.11.16", features = ["json"] }
 
 [dependencies.verder-helpen-comm-common]
 git = "https://github.com/verder-helpen/comm-common.git"
